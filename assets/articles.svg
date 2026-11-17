@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="320" viewBox="0 0 360 320" fill="none">
+<defs>
+ <linearGradient id="cover" x1="92" y1="151" x2="265" y2="222" gradientUnits="userSpaceOnUse"><stop stop-color="#B3A9C7"/><stop offset=".55" stop-color="#9385AE"/><stop offset="1" stop-color="#6A5B82"/></linearGradient>
+ <linearGradient id="pageL" x1="89" y1="131" x2="184" y2="182" gradientUnits="userSpaceOnUse"><stop stop-color="#FCF7E8"/><stop offset=".72" stop-color="#ECE4D3"/><stop offset="1" stop-color="#BBB09F"/></linearGradient>
+ <linearGradient id="pageR" x1="185" y1="184" x2="273" y2="112" gradientUnits="userSpaceOnUse"><stop stop-color="#DBD0BC"/><stop offset=".35" stop-color="#F3EDDF"/><stop offset="1" stop-color="#FFFDF3"/></linearGradient>
+ <linearGradient id="edge" x1="94" y1="228" x2="256" y2="251" gradientUnits="userSpaceOnUse"><stop stop-color="#DDD1BA"/><stop offset=".6" stop-color="#F6EFDF"/><stop offset="1" stop-color="#B2A58F"/></linearGradient>
+ <filter id="shadow" x="-50%" y="-100%" width="200%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<ellipse cx="182" cy="265" rx="94" ry="15" fill="#5A4B63" opacity=".19" filter="url(#shadow)"/>
+<path d="M73 159L163 127L289 177L285 240L197 274L69 220L73 159Z" fill="url(#cover)"/>
+<path d="M80 158L186 190L281 157V230L194 262L79 216L80 158Z" fill="url(#edge)"/>
+<path d="M79 200L194 245L280 214M79 206L194 251L280 221M79 211L194 256L279 226" stroke="#BEB19B" stroke-width="1" opacity=".7"/>
+<path d="M187 165C163 132 114 120 81 131V207C118 202 163 214 193 246L187 165Z" fill="url(#pageL)"/>
+<path d="M187 165C201 137 240 115 278 116L279 220C246 218 215 224 193 246L187 165Z" fill="url(#pageR)"/>
+<path d="M81 131C118 120 161 133 187 165C210 131 242 116 278 116" stroke="#FFFCF2" stroke-width="3" stroke-linecap="round"/>
+<path d="M188 165L194 245" stroke="#9D927D" stroke-width="1.5" opacity=".6"/>
+<path d="M98 151C120 150 147 159 166 174M98 163C120 163 146 172 166 187M98 175C121 176 146 184 166 199M98 187C121 189 143 196 158 207" stroke="#C6BDAA" stroke-width="3" stroke-linecap="round"/>
+<path d="M211 165C226 152 244 145 260 143M212 179C226 166 244 160 260 158M214 193C229 180 244 176 260 173M216 207C227 198 240 193 249 190" stroke="#D1C7B4" stroke-width="3" stroke-linecap="round"/>
+<path d="M237 119L248 117L248 170L242 166L237 177V119Z" fill="#7D739A"/>
+<path d="M113 87L150 73L174 84L137 99L113 87Z" fill="#D9CFDE"/><path d="M113 87V102L137 114V99L113 87Z" fill="#A698B3"/><path d="M137 99L174 84V99L137 114V99Z" fill="#BDAFC9"/>
+<path d="M145 51L145 38M138 45L152 45" stroke="#B7A9C3" stroke-width="2" stroke-linecap="round"/>
+<circle cx="284" cy="102" r="4" fill="#C2B3CC"/>
+</svg>

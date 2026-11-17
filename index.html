@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr"><head><meta name="robots" content="noindex,nofollow"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Şifa Bul · Araştırma alanınız</title><link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="theme-color" content="#08130f"><meta name="color-scheme" content="dark"><link rel="stylesheet" href="explanation.css?v=mwkskr2r"><link rel="stylesheet" href="cabinet.css?v=mwkskr2r"><link rel="stylesheet" href="eco.css?v=mwkskr2r"></head>
+<body><a href="#main" class="skip-link">İçeriğe geç</a>
+<div class="ambient" aria-hidden="true"><span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span></div>
+<nav class="dock" aria-label="Ana gezinme">
+ <a class="brand" href="./" aria-label="Şifa Bul ana sayfa"><img src="favicon.svg" alt="" width="30" height="30"><span>Şifa<b>Bul</b></span></a>
+ <button id="assistantNav" class="dock-item" type="button" data-icon="search"><span>Bul</span></button>
+ <button id="cabinetNav" class="dock-item" type="button" data-open-cabinet data-icon="cabinet"><span>Dolabım</span></button>
+ <button id="libraryNav" class="dock-item" type="button" data-open-library data-icon="library"><span>Kütüphane</span></button>
+ <button id="historyNav" class="dock-item" type="button" data-icon="history"><span>Geçmiş</span></button>
+ <span class="dock-spacer"></span>
+ <button id="localButton" class="dock-item codex" type="button" data-icon="sparkle"><span>Codex</span></button>
+</nav>
+<div class="app-shell">
+ <div class="top-status"><span id="mode" class="status-pill">Kaynak kütüphanesi</span></div>
+ <main id="main">
+  <section id="assistantView" class="view" aria-label="Remedi bul"></section>
+  <section id="libraryView" class="view" aria-label="Kaynak kütüphanesi" hidden>
+   <header class="view-head"><div><span class="kicker" id="resultEyebrow">KÜTÜPHANE · 318 ÖZGÜN KAYNAK</span><h1 id="resultTitle">Remedi kütüphanesi</h1></div><span id="count" class="status-pill" role="status">Yükleniyor…</span></header>
+   <div class="lib-controls">
+    <div class="segmented" role="group" aria-label="Kaynak türü">
+     <button type="button" class="seg remedies" data-category="remedies" aria-pressed="true" data-icon="remedies"><span>Remediler</span><small>99</small></button>
+     <button type="button" class="seg symptoms" data-category="symptoms" aria-pressed="false" data-icon="symptoms"><span>Semptomlar</span><small>79</small></button>
+     <button type="button" class="seg articles" data-category="articles" aria-pressed="false" data-icon="articles"><span>Yazılar</span><small>140</small></button>
+     <button type="button" class="seg all" data-category="all" aria-pressed="false" data-icon="all"><span>Tümü</span><small>318</small></button>
+    </div>
+    <form id="searchForm" class="pill-search big" role="search"><span class="search-icon" data-icon="search" aria-hidden="true"></span><label class="sr-only" for="query">Kaynaklarda ara</label><input id="query" type="search" placeholder="Remedi, semptom ya da sözcük" autocomplete="off"><kbd aria-hidden="true">/</kbd><button class="sr-only" type="submit">Ara</button></form>
+   </div>
+   <div class="lib-filters">
+    <div class="filter-line"><span class="kicker">MODALİTE</span><div id="axisFilter" class="chip-row scroller" role="group" aria-label="Modaliteye göre süz"></div></div>
+    <div class="filter-line"><span class="kicker">HARF</span><div id="letterIndex" class="letter-index" role="group" aria-label="Baş harfe göre süz"></div><button type="button" id="clearFilters" class="text-button">Temizle</button></div>
+    <select id="category" hidden aria-hidden="true" tabindex="-1"><option value="all">Tüm kaynaklar</option><option value="remedies" selected>Remediler</option><option value="symptoms">Semptomlar</option><option value="articles">Yazılar</option></select><input id="modality" type="hidden">
+   </div>
+   <p class="results-help" id="resultsHelp"></p>
+   <div id="results" class="lib-grid"></div>
+   <button id="more" class="ghost-button wide" type="button" hidden>Daha fazla kaynak göster</button>
+   <aside class="research-desk" aria-label="Araştırma masası">
+    <div class="desk-heading"><span class="desk-icon" data-icon="leaf"></span><div><span class="kicker">KARŞILAŞTIRMA</span><h2>Araştırma masası</h2></div><button id="deskToggle" class="desk-toggle" type="button" aria-expanded="false" aria-controls="deskBody"><span id="deskCount">Henüz kaynak seçilmedi</span><span class="desk-toggle-label">Masayı aç</span></button></div>
+    <div id="deskBody" class="desk-body">
+     <section class="panel"><div class="step-heading"><span class="step">01</span><h3>Seçilen kaynaklar</h3><span id="selectionCount" class="mono">0 / 5</span></div><div id="selected"></div>
+      <div class="step-heading"><span class="step">02</span><h3>Farkları sorularla keşfet</h3></div><button id="start" class="primary-button wide" type="button">Sorularla karşılaştır</button><button id="reset" class="text-button" type="button">Yanıtları sıfırla</button><div id="question"></div><div id="comparison"></div></section>
+     <section class="panel"><div class="step-heading"><span class="step">03</span><h3>YZ ile anlamlandır</h3></div><details class="custom-context"><summary>Karşılaştırmaya not ekle</summary><label class="sr-only" for="context">Sorunuz veya ek gözleminiz</label><textarea id="context" maxlength="2000" rows="3" placeholder="Bu kaynaklar hangi yönleriyle ayrılıyor?"></textarea></details><button id="synthesize" class="primary-button wide" type="button" data-icon="sparkle">Kısa sentez oluştur</button><p class="muted small">Seçili metin ve sorunuz YZ servisine iletilir (yerel sürümde Codex, canlı sitede aiforyu). Kişisel kimlik bilgisi yazmayın.</p><div id="ai" aria-live="polite"></div></section>
+    </div>
+   </aside>
+  </section>
+  <footer class="notice" data-icon="info"><p>Bu alan kaynak araştırması içindir; tanı veya tedavi önermez. Homeopatinin etkinliği için güvenilir kanıtlar yetersizdir. Tıbbi değerlendirmeyi geciktirmeyin. <a href="https://www.nccih.nih.gov/health/homeopathy" target="_blank" rel="noopener noreferrer">Bilimsel bilgi</a></p></footer>
+ </main>
+</div>
+<section id="activity" class="activity" aria-label="YZ işlem durumu" hidden><div class="activity-head"><strong><span class="live-dot"></span> Yerel Codex</strong><span id="elapsed" class="mono"></span></div><div id="modelName" class="meta mono">Model bilgisi bekleniyor</div><div id="stage" role="status">Hazır</div><progress id="aiProgress" aria-label="YZ yanıtı hazırlanıyor" hidden></progress></section>
+<dialog id="reader" class="reader sheet side"><div class="reader-toolbar"><span class="kicker">ÖZGÜN KAYNAK</span><button id="closeReader" class="close" type="button" aria-label="Kaynak penceresini kapat" data-icon="close"></button></div><div id="readerContent"></div></dialog>
+<dialog id="setup" class="sheet"><button id="closeSetup" class="close" type="button" aria-label="Kapat" data-icon="close"></button><span class="kicker">Yerel sürüm · Codex</span><h2>Kendi YZ aracınla kullan</h2><p>Yerel arayüz bu bilgisayarda çalışır. Yanıtlar Codex’in ChatGPT oturumuyla OpenAI hizmetinde üretilir; çevrimdışı değildir. API anahtarı istenmez; hesabınızın kullanım sınırları geçerlidir.</p><ol><li>Aşağıdaki metni Codex’e yapıştırın.</li><li>Codex yerel dosyaları açar ve sunucuyu başlatır. Gerekirse giriş yaparsınız.</li><li>“Sunucu çalışıyor” yanıtından sonra yerel sürümü açın.</li></ol><textarea id="setupPrompt" readonly rows="7"></textarea><button id="copyPrompt">Kurulum metnini kopyala</button> <a class="button secondary" href="sifabul-yerel.zip" download>Yerel paketi indir</a><p><a class="button" href="http://localhost:5183/" target="_blank" rel="noopener">Sunucu çalışıyor → localhost:5183’te aç</a></p><p>Node.js 22+ ve Codex gerekir. Paket boyutu <span id="packageSize">kaynaklara göre değişir</span>. Sunucu yalnızca 127.0.0.1 üzerinde dinler. Terminal açık kalmalıdır. Bulut sayfası bilgisayarınıza kendiliğinden bağlanmaz.</p><p>Kaynaklar özel kullanımınız içindir. Yerel paket de kaynak metinlerini içerir.</p></dialog><script type="module" src="gate.mjs?v=mwkskr2r"></script></body></html>

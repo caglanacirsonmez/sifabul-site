@@ -1,0 +1,246 @@
+/* YZ açıklaması: kısa önizleme, eksiksiz metin ve özgün kaynaklar. */
+.ai-result {
+  --ai-ink: #173f32;
+  --ai-muted: #536b5c;
+  --ai-accent: #2c6a4c;
+  --ai-line: #d7e4d9;
+  --ai-soft: #edf4ed;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 12px;
+  color: var(--ai-ink);
+  font: 14px/1.65 var(--font, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ai-result *, .ai-result *::before, .ai-result *::after { box-sizing: border-box; }
+.ai-result > :first-child { margin-top: 0; }
+.ai-result [hidden] { display: none !important; }
+.ai-result button,
+:is(#ai, #assistantSummary, .card-ai) .ai-result button {
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 10px 13px;
+  border: 1px solid var(--ai-line);
+  border-radius: 9px;
+  background: var(--ai-soft);
+  color: var(--ai-ink);
+  font: 600 13px/1.4 var(--font, sans-serif);
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.ai-result button:hover:not(:disabled),
+:is(#ai, #assistantSummary, .card-ai) .ai-result button:hover:not(:disabled) { background: #e0eddf; border-color: #8eb499; }
+.ai-result :is(button, summary, textarea):focus-visible {
+  outline: 3px solid #408969;
+  outline-offset: 3px;
+}
+.ai-result button:disabled { opacity: .65; cursor: wait; }
+.ai-result .ai-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  padding: 4px;
+  margin: 0 0 12px;
+  border: 1px solid #dce7dc;
+  border-radius: 13px;
+  background: #e8f0e7;
+}
+.ai-result .ai-tabs [role=tab],
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-tabs [role=tab] {
+  padding: 9px 5px;
+  border-color: transparent;
+  background: transparent;
+  color: #44634f;
+  font-size: 12px;
+  border-radius: 9px;
+}
+.ai-result .ai-tabs [role=tab][aria-selected=true],
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-tabs [role=tab][aria-selected=true] {
+  background: #fffef8;
+  border-color: #c7d9ca;
+  color: #163d2c;
+  box-shadow: 0 2px 5px #214b3010;
+}
+.ai-result [role=tabpanel]:not([hidden]) { min-width: 0; padding: 2px 0 5px; }
+.ai-result .ai-overview {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  counter-reset: ai-point;
+}
+.ai-result button.ai-insight,
+:is(#ai, #assistantSummary, .card-ai) .ai-result button.ai-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 7px;
+  border: 0;
+  border-bottom: 1px solid var(--ai-line);
+  border-radius: 7px;
+  background: transparent;
+  color: #234a37;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.65;
+  text-align: left;
+}
+.ai-result button.ai-insight::before {
+  counter-increment: ai-point;
+  content: counter(ai-point, decimal-leading-zero);
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  height: 24px;
+  margin-top: 1px;
+  border: 1px solid #c9ddc8;
+  border-radius: 7px;
+  background: #e6f0e2;
+  color: #315e3d;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ai-result button.ai-insight::after {
+  content: '↗';
+  flex: 0 0 13px;
+  margin-left: auto;
+  color: #4d7659;
+  font-size: 15px;
+}
+.ai-result button.ai-insight:hover,
+:is(#ai, #assistantSummary, .card-ai) .ai-result button.ai-insight:hover { background: #e7f0e5; }
+.ai-result .ai-full-text,
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-full-text {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-height: none;
+  margin: 0;
+  padding: 9px 2px 14px;
+  border: 0;
+  background: none;
+  color: #254633;
+  font: 14px/1.8 var(--font, sans-serif);
+  white-space: pre-wrap;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  -webkit-line-clamp: unset;
+}
+.ai-result .ai-result-note {
+  margin: 10px 0;
+  color: var(--ai-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.ai-result .ai-citations { margin: 0; padding: 0; }
+.ai-result details { margin: 0; border: 0; border-bottom: 1px solid var(--ai-line); background: none; }
+.ai-result details > summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 12px 2px;
+  color: #284f3b;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+  list-style: none;
+  cursor: pointer;
+}
+.ai-result details > summary::-webkit-details-marker { display: none; }
+.ai-result details > summary::after { content: '+'; flex: 0 0 18px; margin-left: auto; color: #37654a; font-size: 20px; font-weight: 400; }
+.ai-result details[open] > summary::after { content: '−'; }
+.ai-result .ai-citations blockquote {
+  margin: 5px 0 11px;
+  padding: 5px 0 5px 13px;
+  border-left: 3px solid #9fc09c;
+  color: #385744;
+  font: 13px/1.8 var(--font, sans-serif);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ai-result .ai-source-button,
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-source-button {
+  margin-bottom: 12px;
+  padding: 9px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #286545;
+  font-size: 12px;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ai-result .ai-actions, .ai-result .ai-version-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--ai-line);
+}
+.ai-result .ai-actions > button { flex: 1 1 120px; }
+.ai-result .ai-actions :is(.ai-primary, .primary, [data-primary=true]),
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-actions :is(.ai-primary, .primary, [data-primary=true]),
+.ai-result .ai-reply button[type=submit],
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-reply button[type=submit] {
+  background: #2c6548;
+  border-color: #2c6548;
+  color: #fff;
+}
+.ai-result .ai-actions :is(.ai-primary, .primary):hover,
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-actions :is(.ai-primary, .primary):hover,
+.ai-result .ai-reply button[type=submit]:hover,
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-reply button[type=submit]:hover { background: #204f38; }
+.ai-result .ai-version-switch { margin: 0 0 10px; padding: 0; border: 0; gap: 6px; }
+.ai-result .ai-version-switch button { font-size: 12px; padding: 8px 12px; }
+.ai-result .ai-version-switch button[aria-pressed=true],
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-version-switch button[aria-pressed=true] { border-color: #6c9e79; background: #dfeedd; color: #1c4b2d; }
+.ai-result .ai-followup { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ai-line); }
+.ai-result .ai-question { margin: 0 0 10px; color: #234c36; font-size: 14px; font-weight: 600; line-height: 1.65; }
+.ai-result .ai-followup > p { margin: 0 0 10px; }
+.ai-result .ai-reply { margin: 2px 0 14px; }
+.ai-result .ai-reply form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; margin: 0 0 13px; }
+.ai-result .ai-reply label { color: #345741; font-size: 13px; font-weight: 600; }
+.ai-result .ai-reply textarea,
+:is(#ai, #assistantSummary, .card-ai) .ai-result .ai-reply textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 80px;
+  max-height: 230px;
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px solid #b4ccb8;
+  border-radius: 9px;
+  background: #fffef8;
+  color: #244c36;
+  font: 14px/1.65 var(--font, sans-serif);
+  resize: vertical;
+}
+.ai-result .ai-reply textarea::placeholder { color: #647767; }
+.ai-result .ai-reply button[type=submit] { justify-self: start; min-width: 118px; }
+@media (max-width: 600px) {
+  .ai-result { font-size: 13px; }
+  .ai-result .ai-tabs { gap: 2px; padding: 3px; border-radius: 11px; }
+  .ai-result .ai-tabs [role=tab],
+  :is(#ai, #assistantSummary, .card-ai) .ai-result .ai-tabs [role=tab] { padding: 9px 3px; font-size: 11px; }
+  .ai-result button.ai-insight,
+  :is(#ai, #assistantSummary, .card-ai) .ai-result button.ai-insight { gap: 8px; padding: 12px 3px; }
+  .ai-result .ai-actions { gap: 7px; }
+  .ai-result .ai-actions > button { flex-basis: 108px; }
+  .ai-result .ai-reply button[type=submit] { width: 100%; justify-self: stretch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-result button { transition: none; }
+}
