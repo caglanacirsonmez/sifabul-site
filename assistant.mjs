@@ -1,12 +1,12 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwkskr2r';
-import {buildCandidates} from './assistant-engine.mjs?v=mwkskr2r';
-import {axes,norm,evidence} from './search.mjs?v=mwkskr2r';
-import {setView} from './shell.mjs?v=mwkskr2r';
-import {iconNode,axisIcons} from './icons.mjs?v=mwkskr2r';
-import {buildClusters} from './symptom-map.mjs?v=mwkskr2r';
-import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwkskr2r';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwl49cw1';
+import {buildCandidates} from './assistant-engine.mjs?v=mwl49cw1';
+import {axes,norm,evidence} from './search.mjs?v=mwl49cw1';
+import {setView} from './shell.mjs?v=mwl49cw1';
+import {iconNode,axisIcons} from './icons.mjs?v=mwl49cw1';
+import {buildClusters} from './symptom-map.mjs?v=mwl49cw1';
+import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwl49cw1';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};

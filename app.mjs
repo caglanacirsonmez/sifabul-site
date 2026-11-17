@@ -1,13 +1,13 @@
-import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwkskr2r';
-import {remedyProfile} from './find.mjs?v=mwkskr2r';
-import {initCabinet} from './cabinet.mjs?v=mwkskr2r';
-import {initAssistant} from './assistant.mjs?v=mwkskr2r';
-import {initModels} from './model3d.mjs?v=mwkskr2r';
-import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwkskr2r';
-import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwkskr2r';
-import {initShell} from './shell.mjs?v=mwkskr2r';
-import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE} from './remote-ai.mjs?v=mwkskr2r';
-import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwkskr2r';
+import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwl49cw1';
+import {remedyProfile} from './find.mjs?v=mwl49cw1';
+import {initCabinet} from './cabinet.mjs?v=mwl49cw1';
+import {initAssistant} from './assistant.mjs?v=mwl49cw1';
+import {initModels} from './model3d.mjs?v=mwl49cw1';
+import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwl49cw1';
+import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwl49cw1';
+import {initShell} from './shell.mjs?v=mwl49cw1';
+import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel} from './remote-ai.mjs?v=mwl49cw1';
+import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwl49cw1';
 const $=id=>document.getElementById(id);const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const btn=(label,fn,cls,iconName)=>{const b=el('button',label,cls);b.type='button';b.onclick=fn;if(iconName)b.prepend(iconNode(iconName));return b;};
 applyIcons();initShell();
@@ -17,11 +17,11 @@ $('setupPrompt').value='SifaBul yerel Codex sürümünü başlat. Bu bilgisayard
 // Canlı sitede YZ: kendi API anahtarınız (varsayılan aiforyu). Anahtar yalnız bu tarayıcıda saklanır.
 function remoteLocal(){const s=getRemote();return s?{ready:true,remote:true,model:s.model||'',message:'YZ hazır',stage:'Hazır',busy:false}:null;}
 {
- const box=el('section',undefined,'remote-ai');box.innerHTML='<span class="kicker">API anahtarıyla YZ</span><h2>Bu sitede YZ kullan</h2><p class="muted">aiforyu (veya OpenAI uyumlu başka bir servis) API anahtarınızı girin. Anahtar yalnızca bu tarayıcıda saklanır; istekler doğrudan servise gider.</p><form class="remote-form" autocomplete="off"><label>API anahtarı<input type="password" name="key" autocomplete="off" spellcheck="false" placeholder="aify_…"></label><details><summary>Gelişmiş</summary><label>Adres<input name="base" spellcheck="false"></label></details><label>Model<select name="model"><option value="">Servis varsayılanı</option></select></label><div class="remote-actions"><button type="submit">Kaydet ve dene</button><button type="button" class="secondary" data-forget>Anahtarı sil</button></div><p class="remote-status" role="status"></p></form>';
+ const box=el('section',undefined,'remote-ai');box.innerHTML='<span class="kicker">API anahtarıyla YZ</span><h2>Bu sitede YZ kullan</h2><p class="muted">Claude API anahtarınızı (sk-ant-…) ya da aiforyu veya OpenAI uyumlu başka bir servisin anahtarını girin. Anahtar yalnızca bu tarayıcıda saklanır; istekler doğrudan servise gider.</p><form class="remote-form" autocomplete="off"><label>API anahtarı<input type="password" name="key" autocomplete="off" spellcheck="false" placeholder="sk-ant-… veya aify_…"></label><details><summary>Gelişmiş</summary><label>Adres<input name="base" spellcheck="false"></label></details><label>Model<select name="model"><option value="">Servis varsayılanı</option></select></label><div class="remote-actions"><button type="submit">Kaydet ve dene</button><button type="button" class="secondary" data-forget>Anahtarı sil</button></div><p class="remote-status" role="status"></p></form>';
  const form=box.querySelector('form'),status=box.querySelector('.remote-status'),modelSelect=form.model;
- const current=getRemote();form.base.value=current?.base||DEFAULT_BASE;if(current){form.key.placeholder='Kayıtlı anahtar · değiştirmek için yazın';if(current.model){modelSelect.append(new Option(current.model,current.model));modelSelect.value=current.model;}status.textContent=current.site?'Sitenin aiforyu anahtarı kullanılıyor'+(current.model?' · '+current.model:'')+'. İsterseniz kendi anahtarınızı girebilirsiniz.':'Kayıtlı anahtar var.';if(current.site)form.key.placeholder='aify_…';}
- form.onsubmit=async e=>{e.preventDefault();const saved=getRemote();const key=form.key.value.trim()||saved?.key;if(!key){status.textContent='Anahtarı yazın.';return;}const base=form.base.value.trim()||DEFAULT_BASE;status.textContent='Deneniyor…';
-  try{const models=await listModels({base,key});const keep=modelSelect.value;modelSelect.replaceChildren(new Option('Servis varsayılanı',''),...models.map(m=>new Option(m,m)));const model=models.includes(keep)?keep:(models[0]||'');modelSelect.value=model;setRemote({base,key,model});form.key.value='';form.key.placeholder='Kayıtlı anahtar · değiştirmek için yazın';status.textContent='Bağlandı · '+(models.length?models.length+' model':'model listesi boş');if(!local||local.remote){local=remoteLocal();showActivity();$('mode').textContent='YZ hazır · '+(model||'varsayılan');}}
+ const current=getRemote();form.base.value=current?.base||DEFAULT_BASE;if(current){form.key.placeholder='Kayıtlı anahtar · değiştirmek için yazın';if(current.model){modelSelect.append(new Option(current.model,current.model));modelSelect.value=current.model;}status.textContent=current.site?'Sitenin YZ anahtarı kullanılıyor'+(current.model?' · '+current.model:'')+'. İsterseniz kendi anahtarınızı girebilirsiniz.':'Kayıtlı anahtar var.';if(current.site)form.key.placeholder='sk-ant-… veya aify_…';}
+ form.onsubmit=async e=>{e.preventDefault();const saved=getRemote();const key=form.key.value.trim()||saved?.key;if(!key){status.textContent='Anahtarı yazın.';return;}const base=resolveBase(form.base.value.trim(),key);form.base.value=base;status.textContent='Deneniyor…';
+  try{const models=await listModels({base,key});const keep=modelSelect.value;modelSelect.replaceChildren(new Option('Servis varsayılanı',''),...models.map(m=>new Option(m,m)));const model=pickModel(models,{base,key},keep);modelSelect.value=model;setRemote({base,key,model});form.key.value='';form.key.placeholder='Kayıtlı anahtar · değiştirmek için yazın';status.textContent='Bağlandı · '+(models.length?models.length+' model':'model listesi boş');if(!local||local.remote){local=remoteLocal();showActivity();$('mode').textContent='YZ hazır · '+(model||'varsayılan');}}
   catch(err){status.textContent=err.message;}};
  modelSelect.onchange=()=>{const s=getRemote();if(s){setRemote({...s,model:modelSelect.value});if(local?.remote){local.model=modelSelect.value;showActivity();}}};
  box.querySelector('[data-forget]').onclick=()=>{setRemote(null);form.key.value='';form.key.placeholder='aify_…';status.textContent='Anahtar silindi.';if(local?.remote){local=null;$('activity').hidden=true;$('localButton').classList.remove('ready');$('mode').textContent='';}};
