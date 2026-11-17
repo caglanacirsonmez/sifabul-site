@@ -1,10 +1,10 @@
 // Hızlı bulma yardımcıları: serbest yazıdan semptom kaynağı eşleme ve remedi modalite profili. DOM kullanmaz; testlenebilir.
-import {axes,norm,evidence} from './search.mjs?v=mwl49cw1';
+import {axes,norm,evidence} from './search.mjs?v=mwl52nwe';
 
 const tokens=s=>norm(s).replace(/[^a-z0-9çğıöşü\s]/g,' ').split(/\s+/).filter(t=>t.length>=2);
 const stem=t=>t.slice(0,Math.max(3,Math.min(4,t.length)));
 // Gündelik ifadeleri kaynak başlıklarına bağlayan küçük eş anlamlılar listesi.
-const synonyms={grip:'influenza',nezle:'soguk alginligi',alerji:'saman nezlesi',bulanti:'kusma',regl:'adet',stres:'anksiyete',kaygi:'anksiyete',endise:'anksiyete',uyuyamama:'uykusuzluk',bocek:'isiriklar sokmalar',ari:'sokmalar',donme:'vertigo',sersemlik:'vertigo',yanik:'yaniklari',burkulma:'burkulma',morarma:'darbe carpma',dusme:'darbe dusme',kirik:'kemik kiriklari',aft:'agiz ici yaralar aftlar',bademcik:'tonsiller',tonsil:'tonsiller',gaz:'kolik',ates:'ates',corona:'covid',korona:'covid',yorgunluk:'tukenmislik zihinsel yorgunluk',halsizlik:'tukenmislik',hemoroid:'hemoroidler',basur:'hemoroidler',idrar:'sistit',mesane:'sistit',sinus:'sinuzit',akinti:'geniz akintisi',kanama:'kanamasi',kalp:'carpinti',ishal:'ishal'};
+const synonyms={grip:'influenza',nezle:'soguk alginligi',alerji:'saman nezlesi',bulanti:'kusma',regl:'adet',stres:'anksiyete',kaygi:'anksiyete',endise:'anksiyete',uyuyamama:'uykusuzluk',bocek:'isiriklar sokmalar',ari:'sokmalar',donme:'vertigo',sersemlik:'vertigo',yanik:'yaniklari',burkulma:'burkulma',morarma:'darbe carpma',dusme:'darbe dusme',kirik:'kemik kiriklari',aft:'agiz ici yaralar aftlar',bademcik:'tonsiller',tonsil:'tonsiller',gaz:'kolik',karin:'mide agrisi kolik',sanci:'kolik',kramp:'kolik',ates:'ates',corona:'covid',korona:'covid',yorgunluk:'tukenmislik zihinsel yorgunluk',halsizlik:'tukenmislik',hemoroid:'hemoroidler',basur:'hemoroidler',idrar:'sistit',mesane:'sistit',sinus:'sinuzit',akinti:'geniz akintisi',kanama:'kanamasi',kalp:'carpinti',ishal:'ishal'};
 // Eş anlamlısı tam eşleşen sözcüğün kendi önek eşleşmesi zayıflatılır ("stres" → Streptokok değil Anksiyete).
 const expand=q=>{const out=[];for(const t of q){const exact=synonyms[t],s=exact||Object.entries(synonyms).find(([k])=>t.startsWith(k)&&k.length>=4)?.[1];out.push(exact&&exact!==t?{weak:t}:t);if(s&&s!==t)out.push(...tokens(s).map(x=>({syn:x})));}return out;};
 const word=t=>typeof t==='string'?t:t.syn||t.weak;

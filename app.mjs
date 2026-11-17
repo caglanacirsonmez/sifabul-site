@@ -1,13 +1,13 @@
-import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwl49cw1';
-import {remedyProfile} from './find.mjs?v=mwl49cw1';
-import {initCabinet} from './cabinet.mjs?v=mwl49cw1';
-import {initAssistant} from './assistant.mjs?v=mwl49cw1';
-import {initModels} from './model3d.mjs?v=mwl49cw1';
-import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwl49cw1';
-import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwl49cw1';
-import {initShell} from './shell.mjs?v=mwl49cw1';
-import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel} from './remote-ai.mjs?v=mwl49cw1';
-import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwl49cw1';
+import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwl52nwe';
+import {remedyProfile} from './find.mjs?v=mwl52nwe';
+import {initCabinet} from './cabinet.mjs?v=mwl52nwe';
+import {initAssistant} from './assistant.mjs?v=mwl52nwe';
+import {initModels} from './model3d.mjs?v=mwl52nwe';
+import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwl52nwe';
+import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwl52nwe';
+import {initShell} from './shell.mjs?v=mwl52nwe';
+import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel,isClaude} from './remote-ai.mjs?v=mwl52nwe';
+import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwl52nwe';
 const $=id=>document.getElementById(id);const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const btn=(label,fn,cls,iconName)=>{const b=el('button',label,cls);b.type='button';b.onclick=fn;if(iconName)b.prepend(iconNode(iconName));return b;};
 applyIcons();initShell();
@@ -83,7 +83,7 @@ function renderQuestion(){const chosen=records.filter(r=>selected.has(r.id)&&r.c
  if(Object.keys(answers).length){box.append(el('p',`${Object.keys(answers).length} soru yanıtlandı. Bilinmeyen veya çift yönlü ifadeler puanlanmaz.`,'muted small'));for(const row of compare(chosen,answers)){const item=el('div',undefined,'compare-row'+(row.conflicts?' conflict':''));const head=el('div',undefined,'compare-head');head.append(el('strong',row.record.title),el('span',row.matches+' eşleşme · '+row.conflicts+' çelişki','badge'));item.append(head);const list=el('div',undefined,'evidence-list');for(const d of row.details)for(const ev of d.evidence){const r=el('div',undefined,'evidence-row '+ev.effect);const tag=el('span',undefined,'effect-tag '+ev.effect);tag.append(iconNode(ev.effect==='better'?'down':'up'),el('span',ev.effect==='better'?'Azalır':'Artar'));const m=el('div',undefined,'evidence-main');m.append(el('strong',d.axis+(d.ambiguous?' · iki yönlü':'')+' · satır '+ev.line),el('p',ev.text));r.append(tag,m);list.append(r);}item.append(list,sourceLink(row.record));results.append(item);}}
 }
 let aiBusy=false;
-function showActivity(){if(!local)return;$('activity').hidden=false;$('localButton').innerHTML=icon('sparkle')+'<span>'+(local.remote?'YZ':'Codex')+'</span>';$('localButton').classList.toggle('ready',!!local.ready);$('localButton').title=local.remote?'YZ ayarları':'Yerel sürüm ayarları';$('localButton').classList.add('with-activity');{const head=document.querySelector('#activity .activity-head strong');if(head?.lastChild)head.lastChild.textContent=local.remote?' YZ · aiforyu':' Yerel Codex';}$('modelName').textContent=local.model?'Model · '+local.model:(local.remote?'Model · servis varsayılanı':'Model · Codex varsayılanı (henüz bildirilmedi)');$('stage').textContent=local.stage||local.message;$('aiProgress').hidden=!local.busy;$('activity').classList.toggle('running',!!local.busy);$('elapsed').textContent=local.busy&&local.startedAt?Math.max(0,Math.floor((Date.now()-local.startedAt)/1000))+' sn':'';}
+function showActivity(){if(!local)return;$('activity').hidden=false;$('localButton').innerHTML=icon('sparkle')+'<span>'+(local.remote?'YZ':'Codex')+'</span>';$('localButton').classList.toggle('ready',!!local.ready);$('localButton').title=local.remote?'YZ ayarları':'Yerel sürüm ayarları';$('localButton').classList.add('with-activity');{const head=document.querySelector('#activity .activity-head strong');if(head?.lastChild)head.lastChild.textContent=local.remote?(isClaude(getRemote()||{})?' YZ · Claude':' YZ · aiforyu'):' Yerel Codex';}$('modelName').textContent=local.model?'Model · '+local.model:(local.remote?'Model · servis varsayılanı':'Model · Codex varsayılanı (henüz bildirilmedi)');$('stage').textContent=local.stage||local.message;$('aiProgress').hidden=!local.busy;$('activity').classList.toggle('running',!!local.busy);$('elapsed').textContent=local.busy&&local.startedAt?Math.max(0,Math.floor((Date.now()-local.startedAt)/1000))+' sn':'';}
 async function refreshStatus(){if(local?.remote){showActivity();return;}try{const r=await fetch('/api/status');if(r.ok){local=await r.json();showActivity();}}catch{if(aiBusy)$('stage').textContent='Sunucu bağlantısı bekleniyor…';}}
 // Seçili kaynakların modaliteleri yerelde çıkarılır (YZ gerekmez). Semptom kaynakları bağlam olarak kullanılır.
 function modalityData(ids){
