@@ -627,3 +627,50 @@ dialog[open]{animation:sheet .4s var(--ease)}
 .remote-actions button{padding:11px 20px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface-2);color:var(--text);font:600 14px var(--sans);cursor:pointer}
 .remote-actions button[type=submit]{background:var(--lime);color:var(--lime-ink);border-color:var(--lime)}
 .remote-status{margin:0;min-height:1.2em;color:var(--muted);font-size:13px}
+
+/* Yöntem sekmeleri: Homeopati · Aromaterapi · Su-Jok · Doku tuzları · Bach */
+.method-tabs{display:flex;gap:6px;margin:14px 0 4px;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--surface);overflow-x:auto;scrollbar-width:none}
+.method-tabs::-webkit-scrollbar{display:none}
+.method-tab{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:600 14px var(--sans);cursor:pointer;white-space:nowrap;transition:background .2s var(--ease),color .2s var(--ease)}
+.method-tab small{font-size:12px;opacity:.8}
+.method-tab:hover{color:var(--text)}
+.method-tab.on{background:var(--lime);color:var(--lime-ink)}
+.method-tab.empty:not(.on){opacity:.55}
+.method-tab:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+.method-panel{display:grid;gap:12px}
+.method-intro{margin:0}
+.method-general{padding:12px 14px;border:1px dashed var(--line);border-radius:var(--r-md);display:grid;gap:6px}
+.method-general p{margin:0}
+.method-card{padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);display:grid;gap:10px}
+.method-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.method-card-head h3{margin:0;font:700 18px var(--round);color:var(--text)}
+.source-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font:500 12px var(--sans);cursor:pointer;max-width:100%}
+.source-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.source-chip:hover{color:var(--text);border-color:var(--mint)}
+.source-chip .icon{width:14px;height:14px}
+.source-quote{margin:0;padding:10px 14px;border-left:3px solid var(--mint);background:rgba(111,230,184,.06);border-radius:0 var(--r-sm) var(--r-sm) 0;color:var(--text);font-size:14.5px;line-height:1.55}
+.source-quote b{color:var(--mint);font-weight:600}
+.source-quote cite,.source-quote .cite{display:block;margin-top:6px;font-style:normal;font-size:12px;color:var(--muted)}
+.method-note{margin:0;color:var(--amber)}
+.method-more{border-top:1px solid var(--line);padding-top:8px}
+.method-more summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600}
+.method-more p{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--text)}
+.method-more.safety summary{color:var(--amber)}
+.conflict-box{padding:12px 14px;border:1px solid rgba(255,143,110,.45);border-radius:var(--r-md);background:rgba(255,143,110,.08);display:grid;gap:8px}
+.conflict-box>strong,.conflict-box>summary{color:var(--coral);font-size:14px;font-weight:700;cursor:default}
+details.conflict-box>summary{cursor:pointer}
+.conflict-box p{margin:0;font-size:14px;line-height:1.5}
+.conflict-box .source-quote{border-left-color:var(--coral);background:transparent}
+.badge.origin{background:rgba(184,164,255,.14);color:var(--violet)}
+@media(max-width:600px){.method-tabs{border-radius:var(--r-md)}.method-tab{padding:0 12px;font-size:13px}.method-card{padding:14px}}
+@media(prefers-reduced-motion:reduce){.method-tab{transition:none}}
+.method-mode .find-grid{grid-template-columns:minmax(0,1fr)!important}
+.method-mode .board{display:none!important}
+.method-mode .method-panel{max-width:860px}
+.method-panel,.method-card,.method-card-head>*{min-width:0}
+.method-card-head h3{flex:1 1 auto}
+.source-chip{flex:0 1 auto;overflow:hidden}
+@media(max-width:600px){.method-card-head{flex-direction:column;align-items:flex-start}.source-chip{max-width:100%}}
+.method-card>*{min-width:0;max-width:100%}
+.method-card-head{width:100%}
+.source-chip{box-sizing:border-box}

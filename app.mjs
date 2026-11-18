@@ -1,13 +1,13 @@
-import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwl52nwe';
-import {remedyProfile} from './find.mjs?v=mwl52nwe';
-import {initCabinet} from './cabinet.mjs?v=mwl52nwe';
-import {initAssistant} from './assistant.mjs?v=mwl52nwe';
-import {initModels} from './model3d.mjs?v=mwl52nwe';
-import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwl52nwe';
-import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwl52nwe';
-import {initShell} from './shell.mjs?v=mwl52nwe';
-import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel,isClaude} from './remote-ai.mjs?v=mwl52nwe';
-import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwl52nwe';
+import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwm2iaz1';
+import {remedyProfile} from './find.mjs?v=mwm2iaz1';
+import {initCabinet} from './cabinet.mjs?v=mwm2iaz1';
+import {initAssistant} from './assistant.mjs?v=mwm2iaz1';
+import {initModels} from './model3d.mjs?v=mwm2iaz1';
+import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwm2iaz1';
+import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwm2iaz1';
+import {initShell} from './shell.mjs?v=mwm2iaz1';
+import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel,isClaude} from './remote-ai.mjs?v=mwm2iaz1';
+import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwm2iaz1';
 const $=id=>document.getElementById(id);const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const btn=(label,fn,cls,iconName)=>{const b=el('button',label,cls);b.type='button';b.onclick=fn;if(iconName)b.prepend(iconNode(iconName));return b;};
 applyIcons();initShell();
@@ -35,7 +35,8 @@ const categoryMeta={remedies:{title:'Remedi kütüphanesi',type:'Remedi',icon:'r
 // Kayıttaki modalite satırlarından görünür eksen etiketleri çıkarılır (yalnız gösterim; eleme yapmaz).
 const axisCache=new Map();
 function recordAxes(r){if(axisCache.has(r.id))return axisCache.get(r.id);const text=norm(r.modalities.map(m=>m.text).join('\n'));const found=axes.filter(a=>a.terms.some(t=>text.includes(t)));axisCache.set(r.id,found);return found;}
-const remedyNames=r=>[...r.original.matchAll(/^### (.+)$/gm)].map(m=>m[1].trim());
+// Holirem şikâyet sayfasındaki remedi başlıkları + kaynağı belirtilmiş ek remediler (ör. Cina).
+const remedyNames=r=>[...r.original.matchAll(/^### (.+)$/gm)].map(m=>m[1].trim()).concat((r.extraRemedies||[]).map(x=>x.title));
 const initialOf=title=>norm(title).trim().charAt(0).toLocaleUpperCase('tr');
 function setCategory(category){document.dispatchEvent(new Event('sifabul:open-library'));$('category').value=category;activeAxis=null;activeLetter=null;$('modality').value='';performSearch();}
 document.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>setCategory(b.dataset.category));

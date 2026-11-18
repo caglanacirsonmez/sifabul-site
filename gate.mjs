@@ -6,7 +6,7 @@ const files=['data.json','memory-snapshot.json'];
 const enc=Object.fromEntries(await Promise.all(files.map(async name=>{const r=await fetch(name+'.enc',{cache:'no-cache'});if(!r.ok)throw Error(name+' yüklenemedi');return [name,new Uint8Array(await r.arrayBuffer())];})));
 // Siteye gömülü YZ ayarı (isteğe bağlı): aynı anahtarla şifreli aiforyu anahtarı ve modeli.
 // İsteğe bağlı şifreli dosyalar: gömülü YZ ayarı ve klasik kaynak bankası.
-for(const name of ['ai.json','references.json']){const r=await fetch(name+'.enc',{cache:'no-cache'}).catch(()=>null);if(r?.ok)enc[name]=new Uint8Array(await r.arrayBuffer());}
+for(const name of ['ai.json','references.json','methods.json']){const r=await fetch(name+'.enc',{cache:'no-cache'}).catch(()=>null);if(r?.ok)enc[name]=new Uint8Array(await r.arrayBuffer());}
 const salt=enc['data.json'].slice(0,16);
 const b64=bytes=>btoa(String.fromCharCode(...bytes)),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 
@@ -39,7 +39,7 @@ function start(plain){
   event.preventDefault();const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([record.original],{type:'text/markdown'}));link.download=record.download.split('/').pop();link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
  },true);
  document.getElementById('gate')?.remove();
- return import('./app.mjs?v=mwl52nwe');
+ return import('./app.mjs?v=mwm2iaz1');
 }
 
 async function tryStored(){

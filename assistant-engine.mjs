@@ -1,4 +1,4 @@
-import {axes,norm,search,compare,supportsAxisQuote,nextQuestions as selectQuestions} from './search.mjs?v=mwl52nwe';
+import {axes,norm,search,compare,supportsAxisQuote,nextQuestions as selectQuestions} from './search.mjs?v=mwm2iaz1';
 
 const axisIds=new Set(axes.map(a=>a.id));
 const validAnswer=x=>['better','worse','unknown'].includes(x);
@@ -13,7 +13,7 @@ export function buildCandidates(records,analysis={},answers={},inventoryIds=[],o
  const ids=new Set();
  const symptomIds=new Set(Array.isArray(analysis.symptomIds)?analysis.symptomIds:[]);
  for(const symptom of records.filter(r=>r.category==='symptoms'&&symptomIds.has(r.id))){
-  const headings=new Set([...symptom.original.matchAll(/^###\s+(.+)$/gm)].map(m=>headingKey(m[1])));
+  const headings=new Set([...symptom.original.matchAll(/^###\s+(.+)$/gm)].map(m=>m[1]).concat((symptom.extraRemedies||[]).map(x=>x.title)).map(headingKey));
   for(const r of remedies)if(headings.has(headingKey(r.title)))ids.add(r.id);
  }
  const keywords=(Array.isArray(analysis.keywords)?analysis.keywords:[]).filter(k=>typeof k==='string'&&norm(k).trim().length>=3&&!generic.has(norm(k).trim()));

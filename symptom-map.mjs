@@ -1,5 +1,5 @@
 // Semptom kaynaklarını dokunarak seçmek için kümeler. Başlık eşleşmesi normalize edilir; listede olmayan yeni semptomlar "Diğer"e düşer.
-import {norm} from './search.mjs?v=mwl52nwe';
+import {norm} from './search.mjs?v=mwm2iaz1';
 
 export const clusters=[
  {id:'head',label:'Baş ve sinir',icon:'head',titles:['Baş Ağrıları','Migren','Sağ Taraflı Baş Ağrıları','Sol Taraflı Baş Ağrıları','Vertigo','Boyun Tutulması']},
@@ -14,7 +14,7 @@ export const clusters=[
  {id:'travel',label:'Yolculuk ve ritim',icon:'travel',titles:['Taşıt Tutması','Jet Lag']}
 ];
 
-const remedyNames=record=>[...record.original.matchAll(/^###\s+(.+)$/gm)].map(m=>m[1].trim());
+const remedyNames=record=>[...record.original.matchAll(/^###\s+(.+)$/gm)].map(m=>m[1].trim()).concat((record.extraRemedies||[]).map(x=>x.title));
 
 /** Kümeleri kayıtlarla eşler: her semptoma kaynakta adı geçen remedi sayısını ekler. */
 export function buildClusters(records){

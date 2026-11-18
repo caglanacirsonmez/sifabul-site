@@ -1,12 +1,12 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwl52nwe';
-import {buildCandidates} from './assistant-engine.mjs?v=mwl52nwe';
-import {axes,norm,evidence} from './search.mjs?v=mwl52nwe';
-import {setView} from './shell.mjs?v=mwl52nwe';
-import {iconNode,axisIcons} from './icons.mjs?v=mwl52nwe';
-import {buildClusters} from './symptom-map.mjs?v=mwl52nwe';
-import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwl52nwe';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwm2iaz1';
+import {buildCandidates} from './assistant-engine.mjs?v=mwm2iaz1';
+import {axes,norm,evidence} from './search.mjs?v=mwm2iaz1';
+import {setView} from './shell.mjs?v=mwm2iaz1';
+import {iconNode,axisIcons} from './icons.mjs?v=mwm2iaz1';
+import {buildClusters} from './symptom-map.mjs?v=mwm2iaz1';
+import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwm2iaz1';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -22,6 +22,9 @@ export async function initAssistant(hooks){
  const clusters=buildClusters(records);
  // Arama durumu
  let query='',selected=[],filters={},groupAxis=null,expanded=new Set(),showAllAxes=false,boardOpen=false;
+ // Yöntem sekmeleri (Homeopati, Aromaterapi, Su-Jok, Doku tuzları, Bach): scripts/build-methods.py çıktısı.
+ const methods=await fetch('methods.json').then(r=>r.ok?r.json():null).catch(()=>null);
+ let methodTab='homeopati';
  const root=$('assistantView');root.innerHTML=`
  <header class="view-head find-head">
   <div><span class="kicker">REMEDİ BUL</span><h1>Şikâyeti yaz, remediler sıralansın.</h1></div>
@@ -32,9 +35,11 @@ export async function initAssistant(hooks){
  </header>
  <form id="findForm" class="find-bar" role="search" autocomplete="off"><span class="find-icon" data-icon="search"></span><label class="sr-only" for="findInput">Şikâyet</label><input id="findInput" type="search" placeholder="Ör. burun tıkanıklığı" enterkeyhint="search"><button id="clearFind" class="icon-button" type="button" aria-label="Aramayı temizle" data-icon="close" hidden></button></form>
  <div id="symptomChips" class="symptom-chips" aria-live="polite"></div>
+ <div id="methodTabs" class="method-tabs" role="tablist" aria-label="Yöntem" hidden></div>
  <div class="find-grid">
   <section class="results-col" aria-label="Remedi listesi">
    <div id="resultsHead" class="results-head"></div>
+   <div id="methodPanel" class="method-panel" role="tabpanel" hidden></div>
    <div id="activeFilters" class="active-filters"></div>
    <div id="remedyList" class="remedy-list"></div>
    <div id="excludedBox"></div>
@@ -137,7 +142,7 @@ export async function initAssistant(hooks){
  function remedyRow(row,index){const {record}=row;const profile=profileOf(record),owned=saved.inventory.includes(record.id),open=expanded.has(record.id);
   const card=e('article',undefined,'remedy-row'+(open?' open':'')+(owned?' owned':''));
   const main=button('',()=>{open?expanded.delete(record.id):expanded.add(record.id);render();},'row-main');main.setAttribute('aria-expanded',String(open));
-  const name=e('div',undefined,'row-name');name.append(e('span',String(index+1).padStart(2,'0'),'row-rank mono'));const title=e('h3',record.title);name.append(title);if(owned)name.append(withIcon(e('span','Dolabımda','badge owned'),'cabinet'));if(row.matches)name.append(e('span',row.matches+' eşleşme','badge match'));main.append(name);
+  const name=e('div',undefined,'row-name');name.append(e('span',String(index+1).padStart(2,'0'),'row-rank mono'));const title=e('h3',record.title);name.append(title);if(owned)name.append(withIcon(e('span','Dolabımda','badge owned'),'cabinet'));if(row.matches)name.append(e('span',row.matches+' eşleşme','badge match'));if(record.origin){const o=e('span','Holirem dışı','badge origin');o.title=record.origin;name.append(o);}main.append(name);
   const tags=e('div',undefined,'row-tags');const list=[...profile.values()].sort((a,b)=>(b.axis.id in filters)-(a.axis.id in filters)||(b.axis.id===groupAxis)-(a.axis.id===groupAxis));
   for(const p of list.slice(0,open?99:6))tags.append(tag(p,p.axis.id in filters||p.axis.id===groupAxis));if(!open&&list.length>6)tags.append(e('span','+'+(list.length-6),'mod-tag more'));if(!list.length)tags.append(e('span','Bu şikâyet için modalite bilgisi yok','muted small'));
   main.append(tags,iconNode('chevron','icon row-chevron'));card.append(main);
@@ -149,13 +154,60 @@ export async function initAssistant(hooks){
    const ai=e('div',undefined,'row-ai');const ask=withIcon(button('YZ ile açıkla',()=>hooks.synthesize([record.id],ai,ask,false,('Bu remediyi şu şikâyet bağlamında kaynağa dayanarak kısaca açıkla: '+(query||selected.map(id=>records.find(r=>r.id===id)?.title).join(', '))+'. Seçilen modaliteler: '+JSON.stringify(filters)+'. Tedavi veya doz önerme.').slice(0,2500)),'ghost-button'),'sparkle');detail.append(ask,ai);card.append(detail);}
   return card;}
 
+function methodsFor(ids){
+  if(!methods||!ids.length)return null;
+  const out={};
+  for(const m of methods.methods){if(m.id==='homeopati')continue;const seen=new Map();
+   for(const id of ids)for(const item of methods.bySymptom[id]?.[m.id]||[]){const key=norm(item.item);const symptom=records.find(r=>r.id===id)?.title;
+    if(seen.has(key)){const prev=seen.get(key);if(symptom&&!prev.symptoms.includes(symptom))prev.symptoms.push(symptom);}else seen.set(key,{...item,symptoms:symptom?[symptom]:[]});}
+   out[m.id]=[...seen.values()];}
+  return out;
+ }
+ function renderMethodTabs(data,homeoCount){
+  const bar=$('methodTabs');bar.replaceChildren();bar.hidden=!data;if(!data){methodTab='homeopati';return;}
+  for(const m of methods.methods){const n=m.id==='homeopati'?homeoCount:data[m.id].length,on=methodTab===m.id;
+   const b=button('',()=>{methodTab=m.id;render();},'method-tab'+(on?' on':'')+(n?'':' empty'));b.setAttribute('role','tab');b.setAttribute('aria-selected',String(on));
+   b.append(e('span',m.label),e('small',String(n),'mono'));bar.append(b);}
+  const on=bar.querySelector('.on');if(on&&bar.scrollWidth>bar.clientWidth)bar.scrollLeft=Math.max(0,on.offsetLeft-bar.clientWidth/2+on.offsetWidth/2);
+ }
+ function conflictBox(rule,tagName='div'){
+  const box=e(tagName,undefined,'conflict-box');const head=e(tagName==='details'?'summary':'strong',rule.title);box.append(head);box.append(e('p',rule.message));
+  for(const src of rule.sources||[]){const q=e('blockquote',undefined,'source-quote');q.append(e('span','“'+src.quote+'”'));const rec=src.record&&records.find(r=>r.id===src.record);
+   const cite=rec?button(src.label,()=>hooks.openSource(rec),'text-button cite'):e('cite',src.label);q.append(cite);box.append(q);}
+  return box;
+ }
+ function renderMethodPanel(data){
+  const panel=$('methodPanel'),head=$('resultsHead');panel.replaceChildren();head.replaceChildren();
+  const m=methods.methods.find(x=>x.id===methodTab),items=data[methodTab]||[];
+  const h=e('div',undefined,'count-line');h.append(e('strong',String(items.length),'big-count'),e('span',' '+m.label.toLocaleLowerCase('tr')+' önerisi'));head.append(h);
+  head.append(e('span','Kaynak: '+selected.map(id=>records.find(r=>r.id===id)?.title).join(' + '),'muted small'));
+  panel.append(e('p','Her öneri kaynaktaki cümlenin kendisidir; özetlenmez. Bu bilgiler geleneksel kullanımı anlatır, tanı veya tedavi önerisi değildir.','muted small method-intro'));
+  if(methodTab==='sujok'){const g=e('div',undefined,'method-general');g.append(e('p','Holirem’de şikâyete özel Su-Jok noktası yoktur. Aşağıdakiler Holirem’in Su-Jok yazısındaki genel yansıma ve tohum eşleştirmelerinden alınmıştır; nokta seçimi için bir Su-Jok uzmanına danışın.','small'));
+   for(const s of methods.sujokGeneral||[]){const rec=records.find(r=>r.id===s.source);if(rec)g.append(button(s.title,()=>hooks.openSource(rec),'text-button cite'));}panel.append(g);}
+  if(!items.length){panel.append(e('p','Holirem kaynaklarında bu şikâyet için '+m.label.toLocaleLowerCase('tr')+' içeriği bulunamadı.','empty-note'));return;}
+  const rules=(methods.conflicts||[]).filter(r=>r.method===methodTab);
+  for(const item of items){const card=e('article',undefined,'method-card');const top=e('div',undefined,'method-card-head');top.append(e('h3',item.item));
+   const rec=records.find(r=>r.id===item.source);if(rec){const src=button('',()=>hooks.openSource(rec),'source-chip');src.append(iconNode('book'),e('span','Holirem · '+item.sourceTitle));src.title='Kaynağı oku (satır '+item.line+')';top.append(src);}
+   card.append(top);
+   if(item.symptoms.length>1)card.append(e('p','İlgili: '+item.symptoms.join(', '),'muted small'));
+   const q=e('blockquote',undefined,'source-quote');if(item.section)q.append(e('b',item.section.replace(/:$/,'')+': '));q.append(e('span',item.quote));card.append(q);
+   if(item.note){const n=e('p',item.note,'small method-note');card.append(n);}
+   if(item.how){const d=e('details',undefined,'method-more');d.append(e('summary','Nasıl kullanılır?'),e('p',item.how.quote));card.append(d);}
+   if(item.safety?.length){const d=e('details',undefined,'method-more safety');d.append(e('summary','Güvenlik ve çocuklar'));for(const s of item.safety){const p=e('p');p.append(e('b',s.label+': '),e('span',s.quote));d.append(p);}card.append(d);}
+   const key=norm(item.item);for(const rule of rules)if(rule.match.some(k=>key.includes(k)))card.append(conflictBox(rule));
+   panel.append(card);}
+ }
  function render(){const signature=JSON.stringify([selected,query,filters,onlyOwned]);if(signature!==summarySignature){const fresh=e('div');fresh.id='assistantSummary';fresh.setAttribute('aria-live','polite');$('assistantSummary').replaceWith(fresh);summarySignature=signature;}
   renderChips();$('ownedCount').textContent='('+inventoryCount+' şişe)';
   const head=$('resultsHead'),list=$('remedyList'),excludedBox=$('excludedBox'),board=$('axisBoard'),active=$('activeFilters');[head,list,excludedBox,board,active].forEach(n=>n.replaceChildren());
   root.classList.toggle('has-results',!!(query||selected.length));
-  if(!query&&!selected.length){$('board').hidden=true;return;}
+  if(!query&&!selected.length){$('board').hidden=true;$('methodTabs').hidden=true;$('methodPanel').hidden=true;root.classList.remove('method-mode');return;}
   const result=buildCandidates(records,analysis(),filters,saved.inventory,onlyOwned);
   const rows=[...result.candidates].sort((a,b)=>b.matches-a.matches||(saved.inventory.includes(b.record.id)-saved.inventory.includes(a.record.id))||a.record.title.localeCompare(b.record.title,'tr'));
+  const methodData=methodsFor(selected);renderMethodTabs(methodData,rows.length);
+  const methodMode=!!methodData&&methodTab!=='homeopati';
+  for(const id of ['activeFilters','remedyList','excludedBox'])$(id).hidden=methodMode;root.classList.toggle('method-mode',methodMode);$('methodPanel').hidden=!methodMode;
+  if(methodMode){$('board').hidden=true;renderMethodPanel(methodData);return;}
   // Başlık
   const h=e('div',undefined,'count-line');h.append(e('strong',String(rows.length),'big-count'),e('span',rows.length===result.initialCount?' remedi':' / '+result.initialCount+' remedi'));head.append(h);
   const ctx=e('span',selected.length?'Kaynak: '+selected.map(id=>records.find(r=>r.id===id)?.title).join(' + '):(query?'Remedi metinlerinde “'+query+'”':''),'muted small');head.append(ctx);
@@ -170,6 +222,7 @@ export async function initAssistant(hooks){
    let n=0;for(const [key,label] of [['worse',axis.label+' ile ↑ artanlar'],['better',axis.label+' ile ↓ azalanlar'],['both','İki yönlü'],['none','Kaynakta '+axis.label.toLocaleLowerCase('tr')+' bilgisi yok']]){if(!buckets[key].length)continue;const sec=e('section',undefined,'group-section '+key);sec.append(e('h4',label+' · '+buckets[key].length));for(const r of buckets[key])sec.append(remedyRow(r,n++));list.append(sec);}}
   else rows.forEach((r,i)=>list.append(remedyRow(r,i)));
   if(result.excluded?.length){const d=e('details',undefined,'excluded');d.append(withIcon(e('summary',result.excluded.length+' remedi seçtiğin modaliteyle çelişti'),'filter'));const row=e('div',undefined,'chip-row');for(const x of result.excluded)row.append(button(x.record.title,()=>hooks.openSource(x.record),'chip dim-chip'));d.append(row);excludedBox.append(d);}
+  if(methodData)for(const rule of (methods.conflicts||[]).filter(r=>r.method==='homeopati'))excludedBox.append(conflictBox(rule,'details'));
   // Ayrıştırma panosu
   $('board').hidden=false;$('board').classList.toggle('open',boardOpen);$('boardToggle').setAttribute('aria-expanded',String(boardOpen));
   const summary=axisSummary(rows.map(r=>profileOf(r.record)));const activeIds=Object.keys(filters);
