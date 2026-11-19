@@ -674,3 +674,9 @@ details.conflict-box>summary{cursor:pointer}
 .method-card>*{min-width:0;max-width:100%}
 .method-card-head{width:100%}
 .source-chip{box-sizing:border-box}
+
+/* YZ açıklamasındaki satırlar ve düğmeler: üzerine gelince açık zemin + açık yazı okunmuyordu.
+   Remedi kartı içindeki YZ kutusu (.row-ai) da dahil, hover koyu temada kalır. */
+.ai-result button.ai-insight:hover,.ai-result button.ai-insight:focus-visible{background:var(--surface-3)!important;color:var(--text)!important}
+.ai-result button.ai-insight:hover *{color:var(--text)!important}
+.row-ai .ai-result button:hover:not(:disabled):not(.ai-primary):not([aria-selected=true]){background:var(--surface-3)!important;border-color:var(--line-3)!important;color:var(--text)!important}

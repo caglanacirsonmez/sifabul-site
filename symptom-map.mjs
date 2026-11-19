@@ -1,5 +1,5 @@
 // Semptom kaynaklarını dokunarak seçmek için kümeler. Başlık eşleşmesi normalize edilir; listede olmayan yeni semptomlar "Diğer"e düşer.
-import {norm} from './search.mjs?v=mwm2iaz1';
+import {norm} from './search.mjs?v=mwngczii';
 
 export const clusters=[
  {id:'head',label:'Baş ve sinir',icon:'head',titles:['Baş Ağrıları','Migren','Sağ Taraflı Baş Ağrıları','Sol Taraflı Baş Ağrıları','Vertigo','Boyun Tutulması']},

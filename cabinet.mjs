@@ -1,7 +1,7 @@
-import {loadMemory,getMemory,subscribeMemory,updateInventory} from './memory-client.mjs?v=mwm2iaz1';
-import {initModels,initVialShelf,updateModel} from './model3d.mjs?v=mwm2iaz1';
-import {norm} from './search.mjs?v=mwm2iaz1';
-import {iconNode} from './icons.mjs?v=mwm2iaz1';
+import {loadMemory,getMemory,subscribeMemory,updateInventory} from './memory-client.mjs?v=mwngczii';
+import {initModels,initVialShelf,updateModel} from './model3d.mjs?v=mwngczii';
+import {norm} from './search.mjs?v=mwngczii';
+import {iconNode} from './icons.mjs?v=mwngczii';
 const $=id=>document.getElementById(id);
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 // Dar rafta kısa ad; tam ad erişilebilir isimde, tooltip'te ve ayrıntıda korunur.
