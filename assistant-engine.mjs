@@ -1,4 +1,4 @@
-import {axes,norm,search,compare,supportsAxisQuote,nextQuestions as selectQuestions} from './search.mjs?v=mwxgxfwq';
+import {axes,norm,search,compare,supportsAxisQuote,nextQuestions as selectQuestions} from './search.mjs?v=mwxv2vzh';
 
 const axisIds=new Set(axes.map(a=>a.id));
 const validAnswer=x=>['better','worse','unknown'].includes(x);

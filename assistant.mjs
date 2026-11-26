@@ -1,12 +1,12 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxgxfwq';
-import {buildCandidates} from './assistant-engine.mjs?v=mwxgxfwq';
-import {axes,norm,evidence} from './search.mjs?v=mwxgxfwq';
-import {setView} from './shell.mjs?v=mwxgxfwq';
-import {iconNode,axisIcons} from './icons.mjs?v=mwxgxfwq';
-import {buildClusters} from './symptom-map.mjs?v=mwxgxfwq';
-import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxgxfwq';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxv2vzh';
+import {buildCandidates} from './assistant-engine.mjs?v=mwxv2vzh';
+import {axes,norm,evidence} from './search.mjs?v=mwxv2vzh';
+import {setView} from './shell.mjs?v=mwxv2vzh';
+import {iconNode,axisIcons} from './icons.mjs?v=mwxv2vzh';
+import {buildClusters} from './symptom-map.mjs?v=mwxv2vzh';
+import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxv2vzh';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -152,11 +152,16 @@ export async function initAssistant(hooks){
    const i=lines.findIndex(l=>/^###\s+/.test(l)&&key(l.replace(/^###\s+/,''))===key(record.title));
    if(i>=0){const bullets=bulletsFrom(s.original,i+1);if(bullets.length)out.push({heading:s.title+' için ayırıcı özellikler',source:s,line:i+1,bullets});continue;}
    const extra=(s.extraRemedies||[]).find(x=>key(x.title)===key(record.title));
-   if(extra)out.push({heading:s.title+' ile ilişkisi',source:record,line:1,bullets:[{text:extra.reason,line:0}],note:extra.origin});}
+   // Eğitim sunumundan gelen bağlantının gerekçesi aşağıdaki sunum notu kutusunda zaten görünür.
+   if(extra&&!extra.reason.startsWith('Eğitim sunumu: '))out.push({heading:s.title+' ile ilişkisi',source:record,line:1,bullets:[{text:extra.reason,line:0}],note:extra.origin});}
   if(!out.length||record.origin){const lines=record.original.split('\n');const i=lines.findIndex(l=>/^##\s+Anahtar Belirtiler/.test(l));
    if(i>=0){const bullets=bulletsFrom(record.original,i+1);if(bullets.length)out.push({heading:'Anahtar belirtiler',source:record,line:i+1,bullets});}
    // Holirem'in kısa remedi sayfalarında (ör. yeni eklenenler) yalnız tanıtım paragrafı vardır.
    if(!out.length){const j=lines.findIndex((l,n)=>n>0&&l.trim()&&!/^(#|!\[|>|---)/.test(l.trim()));if(j>=0)out.push({heading:'Genel bakış',source:record,line:j+1,bullets:[{text:lines[j].trim(),line:j+1}]});}}
+  // Holirem eğitim sunumlarından ayırıcı notlar (Belgeler/Ek/ayirici-notlar.json): seçili şikâyete ait olanlar ve genel notlar.
+  const picked=selected.map(id=>records.find(r=>r.id===id)?.title).filter(Boolean),groups=new Map();
+  for(const n of record.deckNotes||[])if(!picked.length||!n.symptoms.length||n.symptoms.some(t=>picked.includes(t))){if(!groups.has(n.sourceId))groups.set(n.sourceId,[]);groups.get(n.sourceId).push(n);}
+  for(const [sid,ns] of groups){const src=records.find(r=>r.id===sid);if(src)out.push({heading:'Eğitim sunumu · ayırıcı not',source:src,line:ns[0].line,bullets:ns.map(n=>({text:'Slayt '+n.slide+': '+n.text,line:0})),deck:true});}
   return out;
  }
  function remedyRow(row,index){const {record}=row;const profile=profileOf(record),owned=saved.inventory.includes(record.id),open=expanded.has(record.id);
@@ -173,7 +178,7 @@ export async function initAssistant(hooks){
   if(open){const detail=e('div',undefined,'row-detail');
    // Holirem şikâyet sayfasındaki "### Remedi" bölümü: ayırıcı cümleler birebir; modalite eşleşen cümlede etiket olarak gösterilir.
    const diffs=differential(record);
-   for(const d of diffs){const box=e('section',undefined,'diff-box');const hd=e('div',undefined,'diff-head');hd.append(e('h4',d.heading));
+   for(const d of diffs){const box=e('section',undefined,'diff-box'+(d.deck?' deck':''));const hd=e('div',undefined,'diff-head');hd.append(e('h4',d.heading));
     const src=button('',()=>hooks.openSource(d.source),'line-link');src.append(e('span',d.source.title+' · satır '+d.line),iconNode('book'));src.setAttribute('aria-label',d.source.title+' kaynağını aç');hd.append(src);box.append(hd);
     const ul=e('ul',undefined,'diff-list');for(const b of d.bullets){const li=e('li');li.append(e('span',b.text));
      for(const p of list)for(const ev of p.evidence)if((ev.sourceId||record.id)===d.source.id&&ev.line===b.line){const t=e('span',ARROW[ev.effect]+' '+p.axis.label,'diff-tag '+ev.effect+(p.axis.id in filters?' on':''));li.append(t);break;}

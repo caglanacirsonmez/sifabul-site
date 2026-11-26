@@ -692,6 +692,9 @@ details.conflict-box>summary{cursor:pointer}
 .diff-tag.worse{color:var(--worse);border-color:rgba(255,143,110,.35)}
 .diff-tag.better{color:var(--better);border-color:rgba(111,230,184,.35)}
 .diff-tag.on{background:rgba(198,243,109,.12)}
+/* Eğitim sunumu notları: Holirem sayfa alıntılarından ayırt edilsin */
+.diff-box.deck{border-style:dashed;background:var(--surface-2,var(--surface))}
+.diff-box.deck .diff-head h4{color:var(--mint)}
 .mod-details{grid-column:1/-1}
 .mod-details>summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;padding:6px 2px}
 .mod-details[open]>summary{margin-bottom:8px}
