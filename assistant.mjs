@@ -1,12 +1,12 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxgk2i5';
-import {buildCandidates} from './assistant-engine.mjs?v=mwxgk2i5';
-import {axes,norm,evidence} from './search.mjs?v=mwxgk2i5';
-import {setView} from './shell.mjs?v=mwxgk2i5';
-import {iconNode,axisIcons} from './icons.mjs?v=mwxgk2i5';
-import {buildClusters} from './symptom-map.mjs?v=mwxgk2i5';
-import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwxgk2i5';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxgxfwq';
+import {buildCandidates} from './assistant-engine.mjs?v=mwxgxfwq';
+import {axes,norm,evidence} from './search.mjs?v=mwxgxfwq';
+import {setView} from './shell.mjs?v=mwxgxfwq';
+import {iconNode,axisIcons} from './icons.mjs?v=mwxgxfwq';
+import {buildClusters} from './symptom-map.mjs?v=mwxgxfwq';
+import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxgxfwq';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -25,6 +25,8 @@ export async function initAssistant(hooks){
  // Yöntem sekmeleri (Homeopati, Aromaterapi, Su-Jok, Doku tuzları, Bach): scripts/build-methods.py çıktısı.
  const methods=await fetch('methods.json').then(r=>r.ok?r.json():null).catch(()=>null);
  let methodTab='homeopati';
+ // Arama bir remedi adıysa (ör. "puls", "nux vomica") remedinin kendisi gösterilir.
+ let remedyHits=[];
  const root=$('assistantView');root.innerHTML=`
  <header class="view-head find-head">
   <div><span class="kicker">REMEDİ BUL</span><h1>Şikâyeti yaz, remediler sıralansın.</h1></div>
@@ -33,7 +35,7 @@ export async function initAssistant(hooks){
    <label class="switch" title="Aramaları Belgeler/Hafiza/gorusmeler.json dosyasında sakla"><input id="rememberSession" type="checkbox"><span class="switch-track"></span><span>Geçmişe kaydet</span></label>
   </div>
  </header>
- <form id="findForm" class="find-bar" role="search" autocomplete="off"><span class="find-icon" data-icon="search"></span><label class="sr-only" for="findInput">Şikâyet</label><input id="findInput" type="search" placeholder="Ör. burun tıkanıklığı" enterkeyhint="search"><button id="clearFind" class="icon-button" type="button" aria-label="Aramayı temizle" data-icon="close" hidden></button></form>
+ <form id="findForm" class="find-bar" role="search" autocomplete="off"><span class="find-icon" data-icon="search"></span><label class="sr-only" for="findInput">Şikâyet</label><input id="findInput" type="search" placeholder="Şikâyet ya da remedi adı · ör. burun tıkanıklığı, Pulsatilla" enterkeyhint="search"><button id="clearFind" class="icon-button" type="button" aria-label="Aramayı temizle" data-icon="close" hidden></button></form>
  <div id="symptomChips" class="symptom-chips" aria-live="polite"></div>
  <div id="methodTabs" class="method-tabs" role="tablist" aria-label="Yöntem" hidden></div>
  <div class="find-grid">
@@ -109,11 +111,13 @@ export async function initAssistant(hooks){
 
  // ---------- Arama ----------
  const input=$('findInput');let typingTimer=null;
- function runQuery(text,{keepSelection=false}={}){query=text;$('clearFind').hidden=!text;if(!keepSelection){const best=matchSymptoms(records,text)[0];selected=best?[best.record.id]:[];filters={};groupAxis=null;expanded=new Set();resetPersistence();epoch++;session=null;}render();scheduleSave();}
+ function runQuery(text,{keepSelection=false}={}){query=text;$('clearFind').hidden=!text;if(!keepSelection){const best=matchSymptoms(records,text)[0];const hits=text?matchRemedies(records,text):[];
+  // Şikâyet adıyla tam eşleşme yoksa ve yazılan bir remedi adıysa remedi gösterilir.
+  remedyHits=hits.length&&!(best&&best.complete)?hits.slice(0,8):[];selected=remedyHits.length?[]:(best?[best.record.id]:[]);filters={};groupAxis=null;expanded=new Set(remedyHits.length===1?[remedyHits[0].record.id]:[]);resetPersistence();epoch++;session=null;}render();scheduleSave();}
  input.addEventListener('input',()=>{clearTimeout(typingTimer);typingTimer=setTimeout(()=>runQuery(input.value.trim()),160);});
  $('findForm').onsubmit=ev=>{ev.preventDefault();clearTimeout(typingTimer);runQuery(input.value.trim());const first=$('remedyList').querySelector('.row-main');if(first&&matchMedia('(max-width: 760px)').matches)input.blur();};
  $('clearFind').onclick=()=>{input.value='';runQuery('');input.focus();};
- function toggleSymptom(id){selected=selected.includes(id)?selected.filter(x=>x!==id):[...selected,id];filters={};groupAxis=null;expanded=new Set();render();scheduleSave();}
+ function toggleSymptom(id){remedyHits=[];selected=selected.includes(id)?selected.filter(x=>x!==id):[...selected,id];filters={};groupAxis=null;expanded=new Set();render();scheduleSave();}
 
  // Bir arama, hafıza şemasına uyan bir görüşme kaydı olarak saklanır (yalnız "Geçmişe kaydet" açıksa).
  let saveTimer=null;
@@ -129,7 +133,8 @@ export async function initAssistant(hooks){
 
  // ---------- Görünüm ----------
  function renderChips(){const box=$('symptomChips');box.replaceChildren();
-  if(!query&&!selected.length){box.append(e('span','Ya da bir alandan seç','kicker muted'));const wrap=e('div',undefined,'browse');for(const c of clusters){const d=e('details',undefined,'browse-group');const s=e('summary');s.append(iconNode(c.icon),e('span',c.label),e('small',String(c.items.length),'mono'));d.append(s);const row=e('div',undefined,'chip-row');for(const item of c.items)row.append(button(item.record.title,()=>{input.value=item.record.title;query=item.record.title;$('clearFind').hidden=false;selected=[item.record.id];filters={};groupAxis=null;render();scheduleSave();},'chip'));d.append(row);wrap.append(d);}box.append(wrap);return;}
+  if(!query&&!selected.length){box.append(e('span','Ya da bir alandan seç','kicker muted'));const wrap=e('div',undefined,'browse');for(const c of clusters){const d=e('details',undefined,'browse-group');const s=e('summary');s.append(iconNode(c.icon),e('span',c.label),e('small',String(c.items.length),'mono'));d.append(s);const row=e('div',undefined,'chip-row');for(const item of c.items)row.append(button(item.record.title,()=>{remedyHits=[];input.value=item.record.title;query=item.record.title;$('clearFind').hidden=false;selected=[item.record.id];filters={};groupAxis=null;render();scheduleSave();},'chip'));d.append(row);wrap.append(d);}box.append(wrap);return;}
+  if(remedyHits.length&&!selected.length){box.append(e('span','“'+query+'” bir remedi adı. Kartta remedinin özelliklerini ve geçtiği şikâyetleri görebilirsiniz.','muted small'));return;}
   const all=query?matchSymptoms(records,query):[],top=all[0]?.score||0,matches=all.filter(m=>m.score>=top*.45).slice(0,8);
   const ids=[...new Set([...selected,...matches.map(m=>m.record.id)])];
   if(!ids.length){box.append(e('span','“'+query+'” adında semptom kaynağı yok; remedi metinlerinde aranıyor.','muted small'));return;}
@@ -149,7 +154,9 @@ export async function initAssistant(hooks){
    const extra=(s.extraRemedies||[]).find(x=>key(x.title)===key(record.title));
    if(extra)out.push({heading:s.title+' ile ilişkisi',source:record,line:1,bullets:[{text:extra.reason,line:0}],note:extra.origin});}
   if(!out.length||record.origin){const lines=record.original.split('\n');const i=lines.findIndex(l=>/^##\s+Anahtar Belirtiler/.test(l));
-   if(i>=0){const bullets=bulletsFrom(record.original,i+1);if(bullets.length)out.push({heading:'Anahtar belirtiler',source:record,line:i+1,bullets});}}
+   if(i>=0){const bullets=bulletsFrom(record.original,i+1);if(bullets.length)out.push({heading:'Anahtar belirtiler',source:record,line:i+1,bullets});}
+   // Holirem'in kısa remedi sayfalarında (ör. yeni eklenenler) yalnız tanıtım paragrafı vardır.
+   if(!out.length){const j=lines.findIndex((l,n)=>n>0&&l.trim()&&!/^(#|!\[|>|---)/.test(l.trim()));if(j>=0)out.push({heading:'Genel bakış',source:record,line:j+1,bullets:[{text:lines[j].trim(),line:j+1}]});}}
   return out;
  }
  function remedyRow(row,index){const {record}=row;const profile=profileOf(record),owned=saved.inventory.includes(record.id),open=expanded.has(record.id);
@@ -171,6 +178,11 @@ export async function initAssistant(hooks){
     const ul=e('ul',undefined,'diff-list');for(const b of d.bullets){const li=e('li');li.append(e('span',b.text));
      for(const p of list)for(const ev of p.evidence)if((ev.sourceId||record.id)===d.source.id&&ev.line===b.line){const t=e('span',ARROW[ev.effect]+' '+p.axis.label,'diff-tag '+ev.effect+(p.axis.id in filters?' on':''));li.append(t);break;}
      ul.append(li);}box.append(ul);if(d.note)box.append(e('p',d.note,'muted small'));detail.append(box);}
+   if(!selected.length){const syms=symptomsForRemedy(records,record);const box=e('section',undefined,'diff-box');const hd=e('div',undefined,'diff-head');hd.append(e('h4','Geçtiği şikâyetler ('+syms.length+')'));box.append(hd);
+    if(syms.length){box.append(e('p','Bir şikâyete dokunun: o şikâyetteki ayırıcı cümleler ve diğer remedilerle birlikte açılır.','muted small'));const row=e('div',undefined,'chip-row');
+     for(const sy of syms)row.append(button(sy.title,()=>{remedyHits=[];input.value=sy.title;query=sy.title;$('clearFind').hidden=false;selected=[sy.id];filters={};groupAxis=null;methodTab='homeopati';expanded=new Set([record.id]);render();scheduleSave();
+      const again=[...document.querySelectorAll('.remedy-row')].find(n=>n.dataset.id===record.id);again?.scrollIntoView({block:'start',behavior:'instant'});},'chip'));box.append(row);}
+    else box.append(e('p','Holirem şikâyet sayfalarında bu remedi henüz ayırıcı remedi olarak geçmiyor.','muted small'));detail.append(box);}
    const modWrap=diffs.length?e('details',undefined,'mod-details'):detail;if(diffs.length){modWrap.append(e('summary','Modalite kanıtları (satır satır)'));detail.append(modWrap);}
    for(const p of list){const g=e('div',undefined,'evidence-group');const side=e('div',undefined,'group-axis');const nm=e('span',undefined,'group-name');nm.append(iconNode(axisIcons[p.axis.id]||'leaf'),e('span',p.axis.label));side.append(nm,e('span',ARROW[p.effect]+' '+WORD[p.effect],'effect-word '+p.effect));
     const quotes=e('ul',undefined,'group-quotes');for(const ev of p.evidence){const li=e('li',undefined,ev.effect);li.append(e('span',(ev.effect==='worse'?'↑ ':'↓ ')+ev.text.replace(/^[-–•]\s*/,''),'quote'));const src=records.find(x=>x.id===(ev.sourceId||record.id))||record;const b=button('',()=>hooks.openSource(src),'line-link');b.append(e('span',(src.id!==record.id?src.title+' · ':'')+'satır '+ev.line),iconNode('book'));b.setAttribute('aria-label',src.title+' satır '+ev.line+' kaynağını aç');li.append(b);quotes.append(li);}
@@ -222,12 +234,19 @@ function methodsFor(ids){
    panel.append(card);}
  }
  // Liste yeniden çizilirken bir anlığına boşalır; sayfa kısalınca tarayıcı en üste atlıyordu. Çizim sırasında yükseklik korunur.
- function render(){const keep=root.offsetHeight;root.style.minHeight=keep+'px';try{renderList();}finally{root.style.minHeight='';}}
+ function renderRemedyHits(){
+  const head=$('resultsHead'),list=$('remedyList');$('board').hidden=true;$('methodTabs').hidden=true;$('methodPanel').hidden=true;root.classList.remove('method-mode');root.classList.add('remedy-mode');
+  for(const id of ['activeFilters','remedyList','excludedBox'])$(id).hidden=false;
+  const h=e('div',undefined,'count-line');h.append(e('strong',String(remedyHits.length),'big-count'),e('span',' remedi'));head.append(h);head.append(e('span','Remedi adında “'+query+'”','muted small'));
+  remedyHits.forEach((x,i)=>list.append(remedyRow({record:x.record,matches:0},i)));
+ }
+ function render(){const keep=root.offsetHeight;root.style.minHeight=keep+'px';root.classList.remove('remedy-mode');try{renderList();}finally{root.style.minHeight='';}}
  function renderList(){const signature=JSON.stringify([selected,query,filters,onlyOwned]);if(signature!==summarySignature){const fresh=e('div');fresh.id='assistantSummary';fresh.setAttribute('aria-live','polite');$('assistantSummary').replaceWith(fresh);summarySignature=signature;}
   renderChips();$('ownedCount').textContent='('+inventoryCount+' şişe)';
   const head=$('resultsHead'),list=$('remedyList'),excludedBox=$('excludedBox'),board=$('axisBoard'),active=$('activeFilters');[head,list,excludedBox,board,active].forEach(n=>n.replaceChildren());
   root.classList.toggle('has-results',!!(query||selected.length));
   if(!query&&!selected.length){$('board').hidden=true;$('methodTabs').hidden=true;$('methodPanel').hidden=true;root.classList.remove('method-mode');return;}
+  if(remedyHits.length&&!selected.length){renderRemedyHits();return;}
   const result=buildCandidates(records,analysis(),filters,saved.inventory,onlyOwned);
   const rows=[...result.candidates].sort((a,b)=>b.matches-a.matches||(saved.inventory.includes(b.record.id)-saved.inventory.includes(a.record.id))||a.record.title.localeCompare(b.record.title,'tr'));
   const methodData=methodsFor(selected);renderMethodTabs(methodData,rows.length);
@@ -263,7 +282,7 @@ function methodsFor(ids){
  }
 
  // ---------- Geçmiş ----------
- function restore(item){resetPersistence();epoch++;session=clone(item);const a=item.analysis||{};selected=(a.symptomIds||[]).filter(id=>records.some(r=>r.id===id));filters={...(a.answers||{}),...(item.answers||{})};for(const k of Object.keys(filters))if(filters[k]==='unknown')delete filters[k];
+ function restore(item){remedyHits=[];resetPersistence();epoch++;session=clone(item);const a=item.analysis||{};selected=(a.symptomIds||[]).filter(id=>records.some(r=>r.id===id));filters={...(a.answers||{}),...(item.answers||{})};for(const k of Object.keys(filters))if(filters[k]==='unknown')delete filters[k];
   query=item.message.startsWith('Arama · ')?item.message.slice(8).split(' → ')[0]:(selected.length?'':(a.keywords||[])[0]||'');input.value=query||selected.map(id=>records.find(r=>r.id===id)?.title).join(', ');$('clearFind').hidden=!input.value;groupAxis=null;expanded=new Set();render();}
  function renderHistory(){const box=$('historyList');box.replaceChildren();if(!saved.sessions.length)box.append(e('p','Henüz kaydedilmiş arama yok.','empty-note'));for(const item of saved.sessions){const row=button('',()=>{$('historyDialog').close();view('assistant');restore(item);},'history-item');const n=Object.values({...item.analysis?.answers,...item.answers}).filter(v=>v!=='unknown').length;row.append(iconNode('search','icon history-icon'));const text=e('span',undefined,'history-text');text.append(e('strong',item.message.replace(/^Arama · /,'').replace(/^Dokunarak seçildi · /,'').slice(0,110)),e('small',new Date(item.updatedAt||item.createdAt).toLocaleString('tr-TR')+(n?' · '+n+' modalite':''),'mono'));row.append(text,iconNode('next','icon dim'));box.append(row);}}
  function openHistory(){view('assistant');renderHistory();$('historyDialog').showModal();}

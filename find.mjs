@@ -1,5 +1,5 @@
 // Hızlı bulma yardımcıları: serbest yazıdan semptom kaynağı eşleme ve remedi modalite profili. DOM kullanmaz; testlenebilir.
-import {axes,norm,evidence} from './search.mjs?v=mwxgk2i5';
+import {axes,norm,evidence} from './search.mjs?v=mwxgxfwq';
 
 const tokens=s=>norm(s).replace(/[^a-z0-9çğıöşü\s]/g,' ').split(/\s+/).filter(t=>t.length>=2);
 const stem=t=>t.slice(0,Math.max(3,Math.min(4,t.length)));
@@ -39,4 +39,26 @@ export function axisSummary(profiles){
  const rows=new Map();
  for(const profile of profiles)for(const [id,p] of profile){const row=rows.get(id)||{axis:p.axis,worse:0,better:0};if(p.effect!=='better')row.worse++;if(p.effect!=='worse')row.better++;rows.set(id,row);}
  return [...rows.values()].sort((a,b)=>Math.min(b.worse,b.better)-Math.min(a.worse,a.better)||(b.worse+b.better)-(a.worse+a.better));
+}
+
+/** Remedi adıyla arama: "puls", "nux vom", "arnica", "kali" → başlığı bu sözcüklerle başlayan remediler.
+ * Her sorgu sözcüğü (en az 3 harf) başlıktaki bir sözcüğün başı olmalıdır; başlık sorguyla başlıyorsa öne alınır. */
+export function matchRemedies(records,query){
+ const q=tokens(query);if(!q.length||q.some(t=>t.length<3))return [];
+ const phrase=norm(query).replace(/[^a-z0-9çğıöşü\s]/g,' ').replace(/\s+/g,' ').trim();
+ const out=[];
+ for(const record of records.filter(r=>r.category==='remedies')){
+  const words=tokens(record.title);
+  if(!q.every(t=>words.some(w=>w.startsWith(t))))continue;
+  const title=norm(record.title).replace(/[^a-z0-9çğıöşü\s]/g,' ').replace(/\s+/g,' ').trim();
+  out.push({record,score:(title.startsWith(phrase)?10:0)+(title===phrase?5:0)+q.length*3-words.length*.1});
+ }
+ return out.sort((a,b)=>b.score-a.score||a.record.title.localeCompare(b.record.title,'tr'));
+}
+
+/** Bir remedinin adının geçtiği şikâyet kayıtları (Holirem "### Remedi" başlığı veya kaynağı belirtilmiş ek bağlantı). */
+export function symptomsForRemedy(records,remedy){
+ const key=t=>norm(t).replace(/[*_`]/g,'').replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+/g,' ').trim();
+ const k=key(remedy.title);
+ return records.filter(r=>r.category==='symptoms'&&([...r.original.matchAll(/^###\s+(.+)$/gm)].some(m=>key(m[1])===k)||(r.extraRemedies||[]).some(x=>key(x.title)===k)));
 }

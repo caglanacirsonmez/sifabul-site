@@ -695,3 +695,6 @@ details.conflict-box>summary{cursor:pointer}
 .mod-details{grid-column:1/-1}
 .mod-details>summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;padding:6px 2px}
 .mod-details[open]>summary{margin-bottom:8px}
+.remedy-mode .find-grid{grid-template-columns:minmax(0,1fr)!important}
+.remedy-mode .board{display:none!important}
+.remedy-mode .results-col{max-width:900px}
