@@ -725,3 +725,14 @@ details.conflict-box>summary{cursor:pointer}
 .fav-empty{display:grid;justify-items:center;gap:10px;padding:40px 16px;border:1px dashed var(--line-2);border-radius:var(--r-md);color:var(--muted);text-align:center}
 .fav-empty .icon{width:32px;height:32px;color:var(--lime)}
 .reader-actions .fav-toggle .icon{width:16px;height:16px}
+/* Yıldız (ve açıkken kaynak düğmesi) kartın sağ kenarında; ok onların solunda kalır, üst üste binmez */
+.remedy-row .row-tools{right:14px;top:50%;transform:translateY(-50%);flex-direction:row}
+.remedy-row .row-tools>.fav-toggle{order:2}
+.remedy-row .row-main{padding-right:62px}
+.remedy-row.open .row-tools{display:flex;top:12px;transform:none}
+.remedy-row.open .row-main{padding-right:104px}
+@media (max-width:760px){
+ .remedy-row .row-tools{right:10px}
+ .remedy-row .row-main{padding-right:54px}
+ .remedy-row.open .row-main{padding-right:96px}
+}

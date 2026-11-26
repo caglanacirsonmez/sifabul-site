@@ -1,13 +1,13 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxvjmqb';
-import {buildCandidates} from './assistant-engine.mjs?v=mwxvjmqb';
-import {axes,norm,evidence} from './search.mjs?v=mwxvjmqb';
-import {setView} from './shell.mjs?v=mwxvjmqb';
-import {iconNode,axisIcons} from './icons.mjs?v=mwxvjmqb';
-import {buildClusters} from './symptom-map.mjs?v=mwxvjmqb';
-import {favoriteButton} from './favorites.mjs?v=mwxvjmqb';
-import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxvjmqb';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxw1cj3';
+import {buildCandidates} from './assistant-engine.mjs?v=mwxw1cj3';
+import {axes,norm,evidence} from './search.mjs?v=mwxw1cj3';
+import {setView} from './shell.mjs?v=mwxw1cj3';
+import {iconNode,axisIcons} from './icons.mjs?v=mwxw1cj3';
+import {buildClusters} from './symptom-map.mjs?v=mwxw1cj3';
+import {favoriteButton} from './favorites.mjs?v=mwxw1cj3';
+import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxw1cj3';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
