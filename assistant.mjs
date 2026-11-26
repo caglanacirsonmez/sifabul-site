@@ -1,12 +1,12 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwngczii';
-import {buildCandidates} from './assistant-engine.mjs?v=mwngczii';
-import {axes,norm,evidence} from './search.mjs?v=mwngczii';
-import {setView} from './shell.mjs?v=mwngczii';
-import {iconNode,axisIcons} from './icons.mjs?v=mwngczii';
-import {buildClusters} from './symptom-map.mjs?v=mwngczii';
-import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwngczii';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxfylfz';
+import {buildCandidates} from './assistant-engine.mjs?v=mwxfylfz';
+import {axes,norm,evidence} from './search.mjs?v=mwxfylfz';
+import {setView} from './shell.mjs?v=mwxfylfz';
+import {iconNode,axisIcons} from './icons.mjs?v=mwxfylfz';
+import {buildClusters} from './symptom-map.mjs?v=mwxfylfz';
+import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwxfylfz';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -139,6 +139,19 @@ export async function initAssistant(hooks){
 
  function tag(p,active){const t=e('span',undefined,'mod-tag '+p.effect+(active?' active':''));t.append(iconNode(axisIcons[p.axis.id]||'leaf'),e('span',p.axis.label),e('b',ARROW[p.effect]));t.title=p.axis.label+': '+WORD[p.effect];return t;}
 
+ function differential(record){
+  const key=t=>norm(t).replace(/[*_`]/g,'').replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+/g,' ').trim();
+  const bulletsFrom=(text,startLine)=>{const lines=text.split('\n'),out=[];for(let i=startLine;i<lines.length;i++){const l=lines[i].trim();if(/^#{1,3}\s/.test(l)||l==='---')break;if(!l)continue;out.push({text:l.replace(/^[-–•*]\s*/,'').replace(/\s+$/,''),line:i+1});}return out;};
+  const out=[];
+  for(const id of selected){const s=records.find(r=>r.id===id);if(!s)continue;const lines=s.original.split('\n');
+   const i=lines.findIndex(l=>/^###\s+/.test(l)&&key(l.replace(/^###\s+/,''))===key(record.title));
+   if(i>=0){const bullets=bulletsFrom(s.original,i+1);if(bullets.length)out.push({heading:s.title+' için ayırıcı özellikler',source:s,line:i+1,bullets});continue;}
+   const extra=(s.extraRemedies||[]).find(x=>key(x.title)===key(record.title));
+   if(extra)out.push({heading:s.title+' ile ilişkisi',source:record,line:1,bullets:[{text:extra.reason,line:0}],note:extra.origin});}
+  if(!out.length||record.origin){const lines=record.original.split('\n');const i=lines.findIndex(l=>/^##\s+Anahtar Belirtiler/.test(l));
+   if(i>=0){const bullets=bulletsFrom(record.original,i+1);if(bullets.length)out.push({heading:'Anahtar belirtiler',source:record,line:i+1,bullets});}}
+  return out;
+ }
  function remedyRow(row,index){const {record}=row;const profile=profileOf(record),owned=saved.inventory.includes(record.id),open=expanded.has(record.id);
   const card=e('article',undefined,'remedy-row'+(open?' open':'')+(owned?' owned':''));
   const main=button('',()=>{open?expanded.delete(record.id):expanded.add(record.id);render();},'row-main');main.setAttribute('aria-expanded',String(open));
@@ -148,9 +161,17 @@ export async function initAssistant(hooks){
   main.append(tags,iconNode('chevron','icon row-chevron'));card.append(main);
   const tools=e('div',undefined,'row-tools');const read=button('',()=>hooks.openSource(record),'icon-button');read.append(iconNode('book'));read.setAttribute('aria-label',record.title+' kaynağını oku');read.title='Kaynağı oku';tools.append(read);card.append(tools);
   if(open){const detail=e('div',undefined,'row-detail');
+   // Holirem şikâyet sayfasındaki "### Remedi" bölümü: ayırıcı cümleler birebir; modalite eşleşen cümlede etiket olarak gösterilir.
+   const diffs=differential(record);
+   for(const d of diffs){const box=e('section',undefined,'diff-box');const hd=e('div',undefined,'diff-head');hd.append(e('h4',d.heading));
+    const src=button('',()=>hooks.openSource(d.source),'line-link');src.append(e('span',d.source.title+' · satır '+d.line),iconNode('book'));src.setAttribute('aria-label',d.source.title+' kaynağını aç');hd.append(src);box.append(hd);
+    const ul=e('ul',undefined,'diff-list');for(const b of d.bullets){const li=e('li');li.append(e('span',b.text));
+     for(const p of list)for(const ev of p.evidence)if((ev.sourceId||record.id)===d.source.id&&ev.line===b.line){const t=e('span',ARROW[ev.effect]+' '+p.axis.label,'diff-tag '+ev.effect+(p.axis.id in filters?' on':''));li.append(t);break;}
+     ul.append(li);}box.append(ul);if(d.note)box.append(e('p',d.note,'muted small'));detail.append(box);}
+   const modWrap=diffs.length?e('details',undefined,'mod-details'):detail;if(diffs.length){modWrap.append(e('summary','Modalite kanıtları (satır satır)'));detail.append(modWrap);}
    for(const p of list){const g=e('div',undefined,'evidence-group');const side=e('div',undefined,'group-axis');const nm=e('span',undefined,'group-name');nm.append(iconNode(axisIcons[p.axis.id]||'leaf'),e('span',p.axis.label));side.append(nm,e('span',ARROW[p.effect]+' '+WORD[p.effect],'effect-word '+p.effect));
     const quotes=e('ul',undefined,'group-quotes');for(const ev of p.evidence){const li=e('li',undefined,ev.effect);li.append(e('span',(ev.effect==='worse'?'↑ ':'↓ ')+ev.text.replace(/^[-–•]\s*/,''),'quote'));const src=records.find(x=>x.id===(ev.sourceId||record.id))||record;const b=button('',()=>hooks.openSource(src),'line-link');b.append(e('span',(src.id!==record.id?src.title+' · ':'')+'satır '+ev.line),iconNode('book'));b.setAttribute('aria-label',src.title+' satır '+ev.line+' kaynağını aç');li.append(b);quotes.append(li);}
-    g.append(side,quotes);detail.append(g);}
+    g.append(side,quotes);modWrap.append(g);}
    const ai=e('div',undefined,'row-ai');const ask=withIcon(button('YZ ile açıkla',()=>hooks.synthesize([record.id],ai,ask,false,('Bu remediyi şu şikâyet bağlamında kaynağa dayanarak kısaca açıkla: '+(query||selected.map(id=>records.find(r=>r.id===id)?.title).join(', '))+'. Seçilen modaliteler: '+JSON.stringify(filters)+'. Tedavi veya doz önerme.').slice(0,2500)),'ghost-button'),'sparkle');detail.append(ask,ai);card.append(detail);}
   return card;}
 

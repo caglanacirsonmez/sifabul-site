@@ -680,3 +680,18 @@ details.conflict-box>summary{cursor:pointer}
 .ai-result button.ai-insight:hover,.ai-result button.ai-insight:focus-visible{background:var(--surface-3)!important;color:var(--text)!important}
 .ai-result button.ai-insight:hover *{color:var(--text)!important}
 .row-ai .ai-result button:hover:not(:disabled):not(.ai-primary):not([aria-selected=true]){background:var(--surface-3)!important;border-color:var(--line-3)!important;color:var(--text)!important}
+
+/* Remedi kartı: Holirem şikâyet sayfasındaki ayırıcı özellikler (birebir cümleler) */
+.diff-box{grid-column:1/-1;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);display:grid;gap:10px}
+.diff-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.diff-head h4{margin:0;font:700 15px var(--round);color:var(--lime)}
+.diff-list{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.diff-list li{position:relative;padding-left:16px;font-size:15px;line-height:1.55;color:var(--text)}
+.diff-list li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--mint)}
+.diff-tag{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;font:600 11.5px var(--sans);vertical-align:1px;border:1px solid var(--line-2);color:var(--muted)}
+.diff-tag.worse{color:var(--worse);border-color:rgba(255,143,110,.35)}
+.diff-tag.better{color:var(--better);border-color:rgba(111,230,184,.35)}
+.diff-tag.on{background:rgba(198,243,109,.12)}
+.mod-details{grid-column:1/-1}
+.mod-details>summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;padding:6px 2px}
+.mod-details[open]>summary{margin-bottom:8px}
