@@ -1,12 +1,12 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxfylfz';
-import {buildCandidates} from './assistant-engine.mjs?v=mwxfylfz';
-import {axes,norm,evidence} from './search.mjs?v=mwxfylfz';
-import {setView} from './shell.mjs?v=mwxfylfz';
-import {iconNode,axisIcons} from './icons.mjs?v=mwxfylfz';
-import {buildClusters} from './symptom-map.mjs?v=mwxfylfz';
-import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwxfylfz';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxgk2i5';
+import {buildCandidates} from './assistant-engine.mjs?v=mwxgk2i5';
+import {axes,norm,evidence} from './search.mjs?v=mwxgk2i5';
+import {setView} from './shell.mjs?v=mwxgk2i5';
+import {iconNode,axisIcons} from './icons.mjs?v=mwxgk2i5';
+import {buildClusters} from './symptom-map.mjs?v=mwxgk2i5';
+import {matchSymptoms,remedyProfile,axisSummary} from './find.mjs?v=mwxgk2i5';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -153,8 +153,11 @@ export async function initAssistant(hooks){
   return out;
  }
  function remedyRow(row,index){const {record}=row;const profile=profileOf(record),owned=saved.inventory.includes(record.id),open=expanded.has(record.id);
-  const card=e('article',undefined,'remedy-row'+(open?' open':'')+(owned?' owned':''));
-  const main=button('',()=>{open?expanded.delete(record.id):expanded.add(record.id);render();},'row-main');main.setAttribute('aria-expanded',String(open));
+  const card=e('article',undefined,'remedy-row'+(open?' open':'')+(owned?' owned':''));card.dataset.id=record.id;
+  // Liste yeniden çizilince sayfa kaymasın: tıklanan kart ekranda aynı yerde kalır, odak yeni karta geçer.
+  const main=button('',()=>{const before=card.getBoundingClientRect().top;open?expanded.delete(record.id):expanded.add(record.id);render();
+   const again=[...document.querySelectorAll('.remedy-row')].find(n=>n.dataset.id===record.id);
+   if(again){const d=again.getBoundingClientRect().top-before;if(Math.abs(d)>1)window.scrollBy({top:d,behavior:'instant'});again.querySelector('.row-main')?.focus({preventScroll:true});}},'row-main');main.setAttribute('aria-expanded',String(open));
   const name=e('div',undefined,'row-name');name.append(e('span',String(index+1).padStart(2,'0'),'row-rank mono'));const title=e('h3',record.title);name.append(title);if(owned)name.append(withIcon(e('span','Dolabımda','badge owned'),'cabinet'));if(row.matches)name.append(e('span',row.matches+' eşleşme','badge match'));if(record.origin){const o=e('span','Holirem dışı','badge origin');o.title=record.origin;name.append(o);}main.append(name);
   const tags=e('div',undefined,'row-tags');const list=[...profile.values()].sort((a,b)=>(b.axis.id in filters)-(a.axis.id in filters)||(b.axis.id===groupAxis)-(a.axis.id===groupAxis));
   for(const p of list.slice(0,open?99:6))tags.append(tag(p,p.axis.id in filters||p.axis.id===groupAxis));if(!open&&list.length>6)tags.append(e('span','+'+(list.length-6),'mod-tag more'));if(!list.length)tags.append(e('span','Bu şikâyet için modalite bilgisi yok','muted small'));
@@ -218,7 +221,9 @@ function methodsFor(ids){
    const key=norm(item.item);for(const rule of rules)if(rule.match.some(k=>key.includes(k)))card.append(conflictBox(rule));
    panel.append(card);}
  }
- function render(){const signature=JSON.stringify([selected,query,filters,onlyOwned]);if(signature!==summarySignature){const fresh=e('div');fresh.id='assistantSummary';fresh.setAttribute('aria-live','polite');$('assistantSummary').replaceWith(fresh);summarySignature=signature;}
+ // Liste yeniden çizilirken bir anlığına boşalır; sayfa kısalınca tarayıcı en üste atlıyordu. Çizim sırasında yükseklik korunur.
+ function render(){const keep=root.offsetHeight;root.style.minHeight=keep+'px';try{renderList();}finally{root.style.minHeight='';}}
+ function renderList(){const signature=JSON.stringify([selected,query,filters,onlyOwned]);if(signature!==summarySignature){const fresh=e('div');fresh.id='assistantSummary';fresh.setAttribute('aria-live','polite');$('assistantSummary').replaceWith(fresh);summarySignature=signature;}
   renderChips();$('ownedCount').textContent='('+inventoryCount+' şişe)';
   const head=$('resultsHead'),list=$('remedyList'),excludedBox=$('excludedBox'),board=$('axisBoard'),active=$('activeFilters');[head,list,excludedBox,board,active].forEach(n=>n.replaceChildren());
   root.classList.toggle('has-results',!!(query||selected.length));

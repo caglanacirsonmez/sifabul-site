@@ -1,5 +1,5 @@
 // Hızlı bulma yardımcıları: serbest yazıdan semptom kaynağı eşleme ve remedi modalite profili. DOM kullanmaz; testlenebilir.
-import {axes,norm,evidence} from './search.mjs?v=mwxfylfz';
+import {axes,norm,evidence} from './search.mjs?v=mwxgk2i5';
 
 const tokens=s=>norm(s).replace(/[^a-z0-9çğıöşü\s]/g,' ').split(/\s+/).filter(t=>t.length>=2);
 const stem=t=>t.slice(0,Math.max(3,Math.min(4,t.length)));
