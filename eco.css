@@ -701,3 +701,27 @@ details.conflict-box>summary{cursor:pointer}
 .remedy-mode .find-grid{grid-template-columns:minmax(0,1fr)!important}
 .remedy-mode .board{display:none!important}
 .remedy-mode .results-col{max-width:900px}
+
+/* Favoriler: yıldız düğmesi ve sayfa */
+.row-tools{gap:6px}
+.remedy-row .row-tools{display:flex}
+.remedy-row:not(.open) .row-tools>:not(.fav-toggle){display:none}
+.fav-toggle .icon{transition:transform .25s var(--spring)}
+.fav-toggle.on{color:var(--lime);border-color:rgba(198,243,109,.45)}
+.fav-toggle.on .icon{fill:currentColor;transform:scale(1.08)}
+.fav-page{max-width:900px}
+.fav-help{margin:-10px 0 14px}
+.fav-filter{width:100%;max-width:360px;margin:0 0 14px;padding:10px 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--text);font:inherit}
+.fav-list{display:grid;gap:12px}
+.fav-card{padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);display:grid;gap:12px}
+.fav-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fav-top h3{margin:0;font-size:19px;line-height:1.2;flex:1;min-width:0}
+.fav-top .fav-toggle{width:36px;height:36px}
+.fav-summary{margin:0;padding-left:18px;display:grid;gap:4px;color:var(--text-2);font-size:14.5px;line-height:1.5}
+.fav-card .chip-row{align-items:center}
+.fav-card .chip-row .kicker{margin-right:4px}
+.fav-actions{display:flex;gap:8px;flex-wrap:wrap}
+.fav-actions .icon{width:16px;height:16px}
+.fav-empty{display:grid;justify-items:center;gap:10px;padding:40px 16px;border:1px dashed var(--line-2);border-radius:var(--r-md);color:var(--muted);text-align:center}
+.fav-empty .icon{width:32px;height:32px;color:var(--lime)}
+.reader-actions .fav-toggle .icon{width:16px;height:16px}

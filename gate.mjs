@@ -39,7 +39,7 @@ function start(plain){
   event.preventDefault();const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([record.original],{type:'text/markdown'}));link.download=record.download.split('/').pop();link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
  },true);
  document.getElementById('gate')?.remove();
- return import('./app.mjs?v=mwxv2vzh');
+ return import('./app.mjs?v=mwxvjmqb');
 }
 
 async function tryStored(){

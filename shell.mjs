@@ -7,7 +7,7 @@ export function setView(view){document.dispatchEvent(new CustomEvent('sifabul:vi
 function syncNav(view){
  document.body.dataset.view=view;
  const mark=(node,on)=>{if(!node)return;node.classList.toggle('active',on);if(on)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current');};
- mark($('assistantNav'),view==='assistant');mark($('cabinetNav'),view==='cabinet');mark($('libraryNav'),view==='library');
+ mark($('assistantNav'),view==='assistant');mark($('cabinetNav'),view==='cabinet');mark($('libraryNav'),view==='library');mark($('favoritesNav'),view==='favorites');
  if(view!=='library')setDesk(false);
 }
 

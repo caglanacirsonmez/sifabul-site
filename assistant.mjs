@@ -1,12 +1,13 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxv2vzh';
-import {buildCandidates} from './assistant-engine.mjs?v=mwxv2vzh';
-import {axes,norm,evidence} from './search.mjs?v=mwxv2vzh';
-import {setView} from './shell.mjs?v=mwxv2vzh';
-import {iconNode,axisIcons} from './icons.mjs?v=mwxv2vzh';
-import {buildClusters} from './symptom-map.mjs?v=mwxv2vzh';
-import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxv2vzh';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwxvjmqb';
+import {buildCandidates} from './assistant-engine.mjs?v=mwxvjmqb';
+import {axes,norm,evidence} from './search.mjs?v=mwxvjmqb';
+import {setView} from './shell.mjs?v=mwxvjmqb';
+import {iconNode,axisIcons} from './icons.mjs?v=mwxvjmqb';
+import {buildClusters} from './symptom-map.mjs?v=mwxvjmqb';
+import {favoriteButton} from './favorites.mjs?v=mwxvjmqb';
+import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwxvjmqb';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -104,7 +105,9 @@ export async function initAssistant(hooks){
  }
  function view(which){if($('cabinetView'))$('cabinetView').hidden=true;document.body.classList.remove('cabinet-open');history.replaceState(null,'',which==='library'?'#kutuphane':'#asistan');root.hidden=which!=='assistant';$('libraryView').hidden=which!=='library';setView(which);}
  document.addEventListener('sifabul:open-library',()=>view('library'));
- $('assistantNav').onclick=()=>{view('assistant');$('findInput').focus();};document.querySelectorAll('[data-open-library]').forEach(n=>n.onclick=()=>view('library'));
+ $('assistantNav').onclick=()=>{view('assistant');$('findInput').focus();};
+ // Favoriler sayfasından "Bul'da aç": remedi ya da şikâyet adıyla arama yapılır.
+ document.addEventListener('sifabul:find',ev=>{const q=String(ev.detail||'');view('assistant');input.value=q;runQuery(q);window.scrollTo({top:0,behavior:'instant'});});document.querySelectorAll('[data-open-library]').forEach(n=>n.onclick=()=>view('library'));
  $('rememberSession').checked=rememberDesired;$('rememberSession').onchange=()=>{rememberDesired=$('rememberSession').checked;if(session&&rememberDesired)session.updatedAt=new Date().toISOString();queuePersistence({kind:'preference',remember:rememberDesired,sessionId:session?.id||null,session:rememberDesired&&session?clone(session):null});};
  $('onlyOwned').onchange=()=>{onlyOwned=$('onlyOwned').checked;render();};
  $('boardToggle').onclick=()=>{boardOpen=!boardOpen;render();};
@@ -174,7 +177,7 @@ export async function initAssistant(hooks){
   const tags=e('div',undefined,'row-tags');const list=[...profile.values()].sort((a,b)=>(b.axis.id in filters)-(a.axis.id in filters)||(b.axis.id===groupAxis)-(a.axis.id===groupAxis));
   for(const p of list.slice(0,open?99:6))tags.append(tag(p,p.axis.id in filters||p.axis.id===groupAxis));if(!open&&list.length>6)tags.append(e('span','+'+(list.length-6),'mod-tag more'));if(!list.length)tags.append(e('span','Bu şikâyet için modalite bilgisi yok','muted small'));
   main.append(tags,iconNode('chevron','icon row-chevron'));card.append(main);
-  const tools=e('div',undefined,'row-tools');const read=button('',()=>hooks.openSource(record),'icon-button');read.append(iconNode('book'));read.setAttribute('aria-label',record.title+' kaynağını oku');read.title='Kaynağı oku';tools.append(read);card.append(tools);
+  const tools=e('div',undefined,'row-tools');tools.append(favoriteButton(record));const read=button('',()=>hooks.openSource(record),'icon-button');read.append(iconNode('book'));read.setAttribute('aria-label',record.title+' kaynağını oku');read.title='Kaynağı oku';tools.append(read);card.append(tools);
   if(open){const detail=e('div',undefined,'row-detail');
    // Holirem şikâyet sayfasındaki "### Remedi" bölümü: ayırıcı cümleler birebir; modalite eşleşen cümlede etiket olarak gösterilir.
    const diffs=differential(record);
@@ -292,7 +295,7 @@ function methodsFor(ids){
  function renderHistory(){const box=$('historyList');box.replaceChildren();if(!saved.sessions.length)box.append(e('p','Henüz kaydedilmiş arama yok.','empty-note'));for(const item of saved.sessions){const row=button('',()=>{$('historyDialog').close();view('assistant');restore(item);},'history-item');const n=Object.values({...item.analysis?.answers,...item.answers}).filter(v=>v!=='unknown').length;row.append(iconNode('search','icon history-icon'));const text=e('span',undefined,'history-text');text.append(e('strong',item.message.replace(/^Arama · /,'').replace(/^Dokunarak seçildi · /,'').slice(0,110)),e('small',new Date(item.updatedAt||item.createdAt).toLocaleString('tr-TR')+(n?' · '+n+' modalite':''),'mono'));row.append(text,iconNode('next','icon dim'));box.append(row);}}
  function openHistory(){view('assistant');renderHistory();$('historyDialog').showModal();}
  $('historyNav').onclick=openHistory;$('closeHistory').onclick=()=>$('historyDialog').close();$('clearHistory').onclick=async()=>{if(await queuePersistence({kind:'clear'})){renderHistory();if(!saved.sessions.length)$('historyList').replaceChildren(e('p','Geçmiş dosyadan temizlendi.','empty-note'));}};
- const requestedHash=location.hash;view('assistant');if(requestedHash==='#dolabim')history.replaceState(null,'','#dolabim');if(requestedHash==='#kutuphane')view('library');subscribeMemory(value=>{
+ const requestedHash=location.hash;view('assistant');if(requestedHash==='#dolabim'||requestedHash==='#favoriler')history.replaceState(null,'',requestedHash);if(requestedHash==='#kutuphane')view('library');subscribeMemory(value=>{
   saved.sessions=clone(value.sessions.sessions);saved.memory=value.sessions.preferences.remember;
   if(!pendingPreferences)rememberDesired=saved.memory;
   inventoryCount=value.inventory.items.length;saved.inventory=value.inventory.items.map(x=>x.recordId).filter(Boolean);

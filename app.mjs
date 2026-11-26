@@ -1,13 +1,14 @@
-import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwxv2vzh';
-import {remedyProfile} from './find.mjs?v=mwxv2vzh';
-import {initCabinet} from './cabinet.mjs?v=mwxv2vzh';
-import {initAssistant} from './assistant.mjs?v=mwxv2vzh';
-import {initModels} from './model3d.mjs?v=mwxv2vzh';
-import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwxv2vzh';
-import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwxv2vzh';
-import {initShell} from './shell.mjs?v=mwxv2vzh';
-import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel,isClaude} from './remote-ai.mjs?v=mwxv2vzh';
-import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwxv2vzh';
+import {renderExplanation,modalityPanel} from './explanation.mjs?v=mwxvjmqb';
+import {remedyProfile} from './find.mjs?v=mwxvjmqb';
+import {initCabinet} from './cabinet.mjs?v=mwxvjmqb';
+import {initFavorites,favoriteButton} from './favorites.mjs?v=mwxvjmqb';
+import {initAssistant} from './assistant.mjs?v=mwxvjmqb';
+import {initModels} from './model3d.mjs?v=mwxvjmqb';
+import {search,norm,nextQuestion,compare,axes} from './search.mjs?v=mwxvjmqb';
+import {applyIcons,icon,iconNode,axisIcons} from './icons.mjs?v=mwxvjmqb';
+import {initShell} from './shell.mjs?v=mwxvjmqb';
+import {getRemote,setRemote,listModels,remoteSynth,DEFAULT_BASE,resolveBase,pickModel,isClaude} from './remote-ai.mjs?v=mwxvjmqb';
+import {buildReferenceIndex,referenceRecord} from './references.mjs?v=mwxvjmqb';
 const $=id=>document.getElementById(id);const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const btn=(label,fn,cls,iconName)=>{const b=el('button',label,cls);b.type='button';b.onclick=fn;if(iconName)b.prepend(iconNode(iconName));return b;};
 applyIcons();initShell();
@@ -44,7 +45,7 @@ $('clearFilters').onclick=()=>{$('query').value='';$('modality').value='';active
 const reader=$('reader');$('closeReader').onclick=()=>reader.close();reader.addEventListener('click',e=>{if(e.target===reader){const r=reader.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)reader.close();}});
 function openReader(r){const box=$('readerContent');box.replaceChildren();const top=el('div',undefined,'reader-title '+r.category);const glyph=el('span',undefined,'glyph');glyph.append(iconNode(categoryMeta[r.category].icon));const t=el('div');t.append(el('span',cats[r.category],'kicker'),el('h2',r.title));top.append(glyph,t);box.append(top);
  const found=recordAxes(r);if(found.length){const row=el('div',undefined,'chip-row');for(const a of found){const c=el('span',undefined,'axis-pill');c.append(iconNode(axisIcons[a.id]||'leaf'),el('span',a.label));row.append(c);}box.append(row);}
- const actions=el('div',undefined,'reader-actions');if(r.url)actions.append(sourceLink(r));const download=el('a','Markdown indir','ghost-button');download.href=r.download;download.download='';download.prepend(iconNode('down'));actions.append(download);box.append(actions);
+ const actions=el('div',undefined,'reader-actions');if(r.category==='remedies')actions.append(favoriteButton(r,{withText:true}));if(r.url)actions.append(sourceLink(r));const download=el('a','Markdown indir','ghost-button');download.href=r.download;download.download='';download.prepend(iconNode('down'));actions.append(download);box.append(actions);
  if(r.modalities.length){const d=el('details',undefined,'basis');const s=el('summary','Kaynakta geçen '+r.modalities.length+' modalite satırı');s.prepend(iconNode('filter'));d.append(s);const list=el('div',undefined,'evidence-list');for(const m of r.modalities){const row=el('div',undefined,'evidence-row');const main=el('div',undefined,'evidence-main');main.append(el('strong',m.heading+' · satır '+m.line),el('p',m.text));row.append(main);list.append(row);}d.append(list);box.append(d);}
  box.append(el('pre',r.original,'original'),el('p',r.file+' · SHA256 '+r.sha256,'meta mono'));reader.showModal();reader.scrollTop=0;}
 function updateSelection(){const box=$('selected');box.replaceChildren();$('selectionCount').textContent=selected.size+' / 5';$('deskCount').textContent=selected.size?selected.size+' kaynak seçili':'Henüz kaynak seçilmedi';document.querySelector('.research-desk').classList.toggle('has-selection',selected.size>0);if(!selected.size){box.append(el('div','Kartlardaki + düğmesiyle en fazla 5 kaynak seçin.','empty-note'));}for(const id of selected){const r=records.find(x=>x.id===id),row=el('div',undefined,'selected-item '+r.category);const g=el('span',undefined,'glyph');g.append(iconNode(categoryMeta[r.category].icon));row.append(g,el('span',r.title));const b=btn('',()=>{selected.delete(id);answers={};render();updateSelection();},'icon-button','close');b.setAttribute('aria-label',r.title+' seçimini kaldır');row.append(b);box.append(row);}renderQuestion();}
@@ -120,7 +121,7 @@ async function runAI(ids,box,button,detail=false,fixedQuestion=null,baseQuestion
 
  }catch(e){box.append(el('p',e.message,'error'));if(local.remote)local.stage=e.message;}finally{loading.remove();if(poll)clearInterval(poll);if(local.remote)local.busy=false;aiBusy=false;button.disabled=false;box.setAttribute('aria-busy','false');await refreshStatus();}}
 $('synthesize').onclick=()=>runAI([...selected],$('ai'),$('synthesize'));
-try{const r=await fetch('data.json');if(!r.ok)throw Error('Kaynak verisi yüklenemedi.');records=(await r.json()).records;performSearch();updateSelection();await initAssistant({records,getLocal:()=>local,refreshStatus,openSetup:()=>setup.showModal(),openSource:openReader,synthesize:runAI});await initCabinet({records,openSource:openReader});initModels();}catch(e){$('count').textContent='Yükleme hatası';$('results').textContent=e.message;}
+try{const r=await fetch('data.json');if(!r.ok)throw Error('Kaynak verisi yüklenemedi.');records=(await r.json()).records;performSearch();updateSelection();await initAssistant({records,getLocal:()=>local,refreshStatus,openSetup:()=>setup.showModal(),openSource:openReader,synthesize:runAI});await initCabinet({records,openSource:openReader});initFavorites({records,openSource:openReader});initModels();}catch(e){$('count').textContent='Yükleme hatası';$('results').textContent=e.message;}
 if(['localhost','127.0.0.1'].includes(location.hostname)){try{const r=await fetch('/api/status');if(r.ok){local=await r.json();showActivity();$('mode').textContent=local.ready?'Yerel Codex hazır':'Yerel sürüm · giriş gerekli';}}catch{}}
 if(!local?.ready){const r=remoteLocal();if(r){local=r;showActivity();$('mode').textContent='YZ hazır · '+(r.model||'aiforyu');}}
 fetch('package-info.json').then(r=>r.ok?r.json():null).then(x=>{if(x)$('packageSize').textContent=x.size;}).catch(()=>{});
