@@ -1,14 +1,15 @@
 // Remedi bul: şikâyeti yaz, kaynakta adı geçen remediler hemen sıralansın; modalitelerle daralt veya grupla.
 // Kayıt/eşitleme kodu önceki sürümle aynıdır.
-import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwzawjz6';
-import {buildCandidates} from './assistant-engine.mjs?v=mwzawjz6';
-import {axes,norm,evidence} from './search.mjs?v=mwzawjz6';
-import {setView} from './shell.mjs?v=mwzawjz6';
-import {iconNode,axisIcons} from './icons.mjs?v=mwzawjz6';
-import {buildClusters} from './symptom-map.mjs?v=mwzawjz6';
-import {favoriteButton} from './favorites.mjs?v=mwzawjz6';
-import {initConstitution} from './constitution-ui.mjs?v=mwzawjz6';
-import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwzawjz6';
+import {loadMemory,getMemory,subscribeMemory,saveSessions} from './memory-client.mjs?v=mwzcsp3l';
+import {buildCandidates} from './assistant-engine.mjs?v=mwzcsp3l';
+import {axes,norm,evidence} from './search.mjs?v=mwzcsp3l';
+import {setView} from './shell.mjs?v=mwzcsp3l';
+import {iconNode,axisIcons} from './icons.mjs?v=mwzcsp3l';
+import {buildClusters} from './symptom-map.mjs?v=mwzcsp3l';
+import {favoriteButton} from './favorites.mjs?v=mwzcsp3l';
+import {handDrawing} from './sujok-hand.mjs?v=mwzcsp3l';
+import {initConstitution} from './constitution-ui.mjs?v=mwzcsp3l';
+import {matchSymptoms,matchRemedies,symptomsForRemedy,remedyProfile,axisSummary} from './find.mjs?v=mwzcsp3l';
 const $=id=>document.getElementById(id);
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const button=(label,fn,cls='chip')=>{const b=e('button',label,cls);b.type='button';b.onclick=fn;return b;};
@@ -185,7 +186,7 @@ export async function initAssistant(hooks){
    // Holirem şikâyet sayfasındaki "### Remedi" bölümü: ayırıcı cümleler birebir; modalite eşleşen cümlede etiket olarak gösterilir.
    const diffs=differential(record);
    for(const d of diffs){const box=e('section',undefined,'diff-box'+(d.deck?' deck':''));const hd=e('div',undefined,'diff-head');hd.append(e('h4',d.heading));
-    const src=button('',()=>hooks.openSource(d.source),'line-link');src.append(e('span',d.source.title+' · satır '+d.line),iconNode('book'));src.setAttribute('aria-label',d.source.title+' kaynağını aç');hd.append(src);box.append(hd);
+    const src=button('',()=>hooks.openSource(d.source),'info-btn');src.append(iconNode('info'));src.title=d.source.title+' · satır '+d.line;src.setAttribute('aria-label',d.source.title+' kaynağını aç (satır '+d.line+')');hd.append(src);box.append(hd);
     const ul=e('ul',undefined,'diff-list');for(const b of d.bullets){const li=e('li');li.append(e('span',b.text));
      for(const p of list)for(const ev of p.evidence)if((ev.sourceId||record.id)===d.source.id&&ev.line===b.line){const t=e('span',ARROW[ev.effect]+' '+p.axis.label,'diff-tag '+ev.effect+(p.axis.id in filters?' on':''));li.append(t);break;}
      ul.append(li);}box.append(ul);if(d.note)box.append(e('p',d.note,'muted small'));detail.append(box);}
@@ -217,48 +218,61 @@ function methodsFor(ids){
  }
  function renderMethodTabs(data,homeoCount){
   const bar=$('methodTabs');bar.replaceChildren();bar.hidden=!data;if(!data){methodTab='homeopati';return;}
-  for(const m of methods.methods){const n=m.id==='homeopati'?homeoCount:data[m.id].length+(data[m.id].docs?.length||0),on=methodTab===m.id;
+  for(const m of methods.methods){const sjn=m.id==='sujok'?new Set(selected.flatMap(id=>(methods.docs?.sujok?.bySymptom?.[id]||[]).map(c=>c.spot+'|'+c.seed))).size:0;
+   const n=m.id==='homeopati'?homeoCount:(sjn||data[m.id].length+(data[m.id].docs?.length||0)),on=methodTab===m.id;
    const b=button('',()=>{methodTab=m.id;render();},'method-tab'+(on?' on':'')+(n?'':' empty'));b.setAttribute('role','tab');b.setAttribute('aria-selected',String(on));
    b.append(e('span',m.label),e('small',String(n),'mono'));bar.append(b);}
   const on=bar.querySelector('.on');if(on&&bar.scrollWidth>bar.clientWidth)bar.scrollLeft=Math.max(0,on.offsetLeft-bar.clientWidth/2+on.offsetWidth/2);
  }
  function docLabel(x){const src=methods.docs?.sources?.[x.source];return (src?src.title:x.source)+(x.page?', s. '+x.page:'');}
- function conflictBox(rule,tagName='div'){
-  const box=e(tagName,undefined,'conflict-box');const head=e(tagName==='details'?'summary':'strong',rule.title);box.append(head);box.append(e('p',rule.message));
-  for(const src of rule.sources||[]){const q=e('blockquote',undefined,'source-quote');q.append(e('span','“'+src.quote+'”'));const rec=src.record&&records.find(r=>r.id===src.record);
-   const cite=rec?button(src.label,()=>hooks.openSource(rec),'text-button cite'):e('cite',src.label);q.append(cite);box.append(q);}
+ // ⓘ düğmesi: kaynak ve ayrıntı yalnız istenince açılır.
+ function infoToggle(host,build,label='Kaynak'){const b=e('button',undefined,'info-btn');b.type='button';b.append(iconNode('info'));b.setAttribute('aria-label',label);b.title=label;b.setAttribute('aria-expanded','false');let box=null;
+  b.onclick=ev=>{ev.stopPropagation();if(box){box.remove();box=null;b.setAttribute('aria-expanded','false');return;}box=e('div',undefined,'info-pop');build(box);host.append(box);b.setAttribute('aria-expanded','true');};return b;}
+ // Çakışma uyarısı tek satır; dayanak alıntılar ⓘ ile.
+ function conflictBox(rule){
+  const box=e('div',undefined,'conflict-line');box.append(iconNode('alert'),e('span',rule.short||rule.title));
+  box.append(infoToggle(box,pop=>{pop.append(e('p',rule.message,'small'));for(const src of rule.sources||[]){const q=e('p',undefined,'small');q.append(e('span','“'+src.quote+'” '));const rec=src.record&&records.find(r=>r.id===src.record);q.append(rec?button(src.label,()=>hooks.openSource(rec),'text-button cite'):e('cite',src.label));pop.append(q);}},'Neden?'));
   return box;
  }
+ function docLabel(x){const src=methods.docs?.sources?.[x.source];return (src?src.title:x.source)+(x.page?', s. '+x.page:'');}
+ // Uzun alıntının ilk cümlesi; devamı istenirse.
+ function shortText(text,max=170){const t=String(text).trim();if(t.length<=max)return [t,''];const cut=t.slice(0,max);const i=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('; '));const at=i>60?i+1:cut.lastIndexOf(' ');return [t.slice(0,at).trim(),t.slice(at).trim()];}
+ function textWithMore(text){const [a,b]=shortText(text);const p=e('p',a,'method-text');if(b){const more=button('devamı',()=>{p.textContent=a+' '+b;},'text-button more-link');p.append(' ',more);}return p;}
  function renderMethodPanel(data){
   const panel=$('methodPanel'),head=$('resultsHead');panel.replaceChildren();head.replaceChildren();
   const m=methods.methods.find(x=>x.id===methodTab),items=data[methodTab]||[],docs=items.docs||[];
-  const h=e('div',undefined,'count-line');h.append(e('strong',String(items.length+docs.length),'big-count'),e('span',' '+m.label.toLocaleLowerCase('tr')+' önerisi'));head.append(h);
-  head.append(e('span','Kaynak: '+selected.map(id=>records.find(r=>r.id===id)?.title).join(' + '),'muted small'));
-  panel.append(e('p','Holirem önerileri kaynaktaki cümlenin kendisidir. Yüklediğiniz belgelerden gelenler kısa Türkçe özettir; kitap ve sayfa numarasıyla gösterilir. Bu bilgiler geleneksel kullanımı anlatır, tanı veya tedavi önerisi değildir.','muted small method-intro'));
-  for(const g of methods.docs?.general?.[methodTab]||[]){const d=e('details',undefined,'method-general doc-general');d.append(e('summary',g.title));for(const t of g.text.split('\n'))d.append(e('p',t,'small'));d.append(e('p','Kaynak: '+docLabel(g),'muted small'));panel.append(d);}
-  if(methodTab==='sujok'){const g=e('div',undefined,'method-general');g.append(e('p','Holirem’de şikâyete özel Su-Jok noktası yoktur. Aşağıdakiler Holirem’in Su-Jok yazısındaki genel yansıma ve tohum eşleştirmelerinden alınmıştır; nokta seçimi için bir Su-Jok uzmanına danışın.','small'));
-   for(const s of methods.sujokGeneral||[]){const rec=records.find(r=>r.id===s.source);if(rec)g.append(button(s.title,()=>hooks.openSource(rec),'text-button cite'));}panel.append(g);}
-  if(!items.length&&!docs.length){panel.append(e('p','Kaynaklarda bu şikâyet için '+m.label.toLocaleLowerCase('tr')+' içeriği bulunamadı.','empty-note'));return;}
-  if(!items.length&&m.id!=='sayi'&&m.id!=='theta')panel.append(e('p','Holirem’de bu şikâyet için '+m.label.toLocaleLowerCase('tr')+' içeriği yok; aşağıdakiler yüklediğiniz belgelerden.','muted small'));
+  // Su-Jok: şikâyete özel uygulama kartı varsa yalnız o gösterilir (yer + tohum + nasıl + çizim).
+  const seen=new Set(),sj=[];
+  if(methodTab==='sujok')for(const id of selected)for(const c of methods.docs?.sujok?.bySymptom?.[id]||[]){const k=c.spot+'|'+c.seed;if(!seen.has(k)){seen.add(k);sj.push({...c,symptom:records.find(r=>r.id===id)?.title});}}
+  const total=sj.length||items.length+docs.length;
+  const h=e('div',undefined,'count-line');h.append(e('strong',String(total),'big-count'),e('span',' '+m.label.toLocaleLowerCase('tr')+' önerisi'));head.append(h);
+  if(!total){panel.append(e('p','Bu şikâyet için '+m.label.toLocaleLowerCase('tr')+' bilgisi yok.','empty-note'));return;}
   const rules=(methods.conflicts||[]).filter(r=>r.method===methodTab);
+  if(sj.length){const how=methods.docs.sujok.how;
+   for(const c of sj){const card=e('article',undefined,'method-card sujok-card');card.append(handDrawing(c.spot,c.where));
+    const body=e('div',undefined,'sujok-body');const top=e('div',undefined,'method-card-head');top.append(e('h3',c.seed));
+    top.append(infoToggle(card,pop=>{for(const s of c.sources)pop.append(e('p',docLabel(s),'small'));for(const s of methods.docs.sujok.howSources||[])pop.append(e('p','Uygulama: '+docLabel(s),'small muted'));}));
+    body.append(top);const dl=e('dl',undefined,'sujok-steps');dl.append(e('dt','Nereye'),e('dd',c.where),e('dt','Nasıl'),e('dd',how));body.append(dl);
+    if(c.note)body.append(e('p',c.note,'small method-note'));if(selected.length>1&&c.symptom)body.append(e('p',c.symptom,'muted small'));
+    card.append(body);panel.append(card);}
+   return;}
   for(const item of items){const card=e('article',undefined,'method-card');const top=e('div',undefined,'method-card-head');top.append(e('h3',item.item));
-   const rec=records.find(r=>r.id===item.source);if(rec){const src=button('',()=>hooks.openSource(rec),'source-chip');src.append(iconNode('book'),e('span','Holirem · '+item.sourceTitle));src.title='Kaynağı oku (satır '+item.line+')';top.append(src);}
-   card.append(top);
-   if(item.symptoms.length>1)card.append(e('p','İlgili: '+item.symptoms.join(', '),'muted small'));
-   const q=e('blockquote',undefined,'source-quote');if(item.section)q.append(e('b',item.section.replace(/:$/,'')+': '));q.append(e('span',item.quote));card.append(q);
-   if(item.note){const n=e('p',item.note,'small method-note');card.append(n);}
+   const rec=records.find(r=>r.id===item.source);
+   top.append(infoToggle(card,pop=>{pop.append(e('p','Holirem · '+item.sourceTitle+(item.section?' · '+item.section.replace(/:$/,''):''),'small'));if(rec)pop.append(button('Kaynağı aç',()=>hooks.openSource(rec),'text-button cite'));}));
+   card.append(top);card.append(textWithMore(item.quote));
    if(item.how){const d=e('details',undefined,'method-more');d.append(e('summary','Nasıl kullanılır?'),e('p',item.how.quote));card.append(d);}
    if(item.safety?.length){const d=e('details',undefined,'method-more safety');d.append(e('summary','Güvenlik ve çocuklar'));for(const s of item.safety){const p=e('p');p.append(e('b',s.label+': '),e('span',s.quote));d.append(p);}card.append(d);}
-   const key=norm(item.item);for(const rule of rules)if(rule.match.some(k=>key.includes(k)))card.append(conflictBox(rule));
+   if(selected.length>1&&item.symptoms.length>1)card.append(e('p','İlgili: '+item.symptoms.join(', '),'muted small'));
+   const key=norm(item.item);for(const rule of rules)if(rule.match.some(k=>key.includes(k))){card.append(conflictBox(rule));break;}
    panel.append(card);}
-  if(docs.length){if(items.length)panel.append(e('h3','Yüklediğiniz belgelerden','method-subhead'));
-   for(const item of docs){const card=e('article',undefined,'method-card doc');const top=e('div',undefined,'method-card-head');top.append(e('h3',item.item));
-    const chip=e('span',undefined,'source-chip doc');chip.append(iconNode('book'),e('span',docLabel(item)));top.append(chip);card.append(top);
-    if(item.value)card.append(e('p',item.value,'doc-value mono'));
-    if(item.text)card.append(e('p',item.text,'doc-text'));
-    if(item.symptoms.length>1)card.append(e('p','İlgili: '+item.symptoms.join(', '),'muted small'));
-    const key=norm(item.item);for(const rule of rules)if(rule.match.some(k=>key.includes(k)))card.append(conflictBox(rule));
-    panel.append(card);}}
+  for(const item of docs){const card=e('article',undefined,'method-card doc');const top=e('div',undefined,'method-card-head');top.append(e('h3',item.item));
+   top.append(infoToggle(card,pop=>pop.append(e('p',docLabel(item),'small'))));card.append(top);
+   if(item.value)card.append(e('p',item.value,'doc-value mono'));
+   if(item.text)card.append(textWithMore(item.text));
+   if(selected.length>1&&item.symptoms.length>1)card.append(e('p','İlgili: '+item.symptoms.join(', '),'muted small'));
+   const key=norm(item.item);for(const rule of rules)if(rule.match.some(k=>key.includes(k))){card.append(conflictBox(rule));break;}
+   panel.append(card);}
+  for(const g of methods.docs?.general?.[methodTab]||[]){const d=e('details',undefined,'method-more doc-general');d.append(e('summary',g.title));for(const t of g.text.split('\n'))d.append(e('p',t,'small'));d.append(e('p','Kaynak: '+docLabel(g),'muted small'));panel.append(d);}
  }
  // Liste yeniden çizilirken bir anlığına boşalır; sayfa kısalınca tarayıcı en üste atlıyordu. Çizim sırasında yükseklik korunur.
  function renderRemedyHits(){
@@ -294,7 +308,7 @@ function methodsFor(ids){
    let n=0;for(const [key,label] of [['worse',axis.label+' ile ↑ artanlar'],['better',axis.label+' ile ↓ azalanlar'],['both','İki yönlü'],['none','Kaynakta '+axis.label.toLocaleLowerCase('tr')+' bilgisi yok']]){if(!buckets[key].length)continue;const sec=e('section',undefined,'group-section '+key);sec.append(e('h4',label+' · '+buckets[key].length));for(const r of buckets[key])sec.append(remedyRow(r,n++));list.append(sec);}}
   else rows.forEach((r,i)=>list.append(remedyRow(r,i)));
   if(result.excluded?.length){const d=e('details',undefined,'excluded');d.append(withIcon(e('summary',result.excluded.length+' remedi seçtiğin modaliteyle çelişti'),'filter'));const row=e('div',undefined,'chip-row');for(const x of result.excluded)row.append(button(x.record.title,()=>hooks.openSource(x.record),'chip dim-chip'));d.append(row);excludedBox.append(d);}
-  if(methodData)for(const rule of (methods.conflicts||[]).filter(r=>r.method==='homeopati'))excludedBox.append(conflictBox(rule,'details'));
+  if(methodData)for(const rule of (methods.conflicts||[]).filter(r=>r.method==='homeopati'))excludedBox.append(conflictBox(rule));
   // Ayrıştırma panosu
   $('board').hidden=false;$('board').classList.toggle('open',boardOpen);$('boardToggle').setAttribute('aria-expanded',String(boardOpen));
   const summary=axisSummary(rows.map(r=>profileOf(r.record)));const activeIds=Object.keys(filters);

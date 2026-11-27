@@ -2,9 +2,9 @@
 // diğerleri OpenAI uyumlu uç noktaya (varsayılan aiforyu) gider.
 // Anahtar yalnız bu tarayıcının localStorage'ında durur; depoya veya yayına girmez.
 // Talimat yerel Codex sürümüyle aynıdır (ai-prompt.mjs); alıntılar yine özgün kaynakla doğrulanır (quote-check.mjs).
-import {instruction} from './ai-prompt.mjs?v=mwzawjz6';
-import {verifyCitations} from './quote-check.mjs?v=mwzawjz6';
-import {REFERENCE_NOTE} from './references.mjs?v=mwzawjz6';
+import {instruction} from './ai-prompt.mjs?v=mwzcsp3l';
+import {verifyCitations} from './quote-check.mjs?v=mwzcsp3l';
+import {REFERENCE_NOTE} from './references.mjs?v=mwzcsp3l';
 
 const STORE='sifabul-remote-ai';
 export const DEFAULT_BASE='https://xfraoziegesiumubeegp.supabase.co/functions/v1/api';

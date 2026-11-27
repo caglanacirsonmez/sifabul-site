@@ -783,3 +783,37 @@ details.conflict-box>summary{cursor:pointer}
 .doc-text{margin:0;font-size:15px;line-height:1.55;color:var(--text)}
 .doc-general>summary{cursor:pointer;font-weight:700;color:var(--text-2)}
 .doc-general p{margin:8px 0 0;line-height:1.55}
+
+/* Sade kartlar: kaynak ⓘ ile, tek satır uyarı, Su-Jok çizimli kart */
+.method-intro{display:none}
+.info-btn{display:inline-grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);color:var(--muted);background:transparent;margin-left:auto}
+.info-btn .icon{width:16px;height:16px}
+.info-btn:hover,.info-btn[aria-expanded=true]{color:var(--lime);border-color:rgba(198,243,109,.45)}
+.info-pop{grid-column:1/-1;padding:8px 12px;border-radius:var(--r-md);background:var(--surface-2);border:1px solid var(--line);display:grid;gap:4px}
+.info-pop p{margin:0}
+.method-card-head{display:flex;align-items:center;gap:10px}
+.method-card-head h3{margin:0}
+.method-text{margin:0;font-size:15px;line-height:1.55;color:var(--text)}
+.more-link{font-size:13px;padding:0}
+.conflict-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r-md);background:rgba(255,143,110,.08);border:1px solid rgba(255,143,110,.3);color:var(--worse);font-size:13.5px;font-weight:600}
+.conflict-line>.icon{width:16px;height:16px}
+.conflict-line .info-pop{color:var(--text-2);font-weight:400}
+.diff-head .info-btn{margin-left:0}
+.sujok-card{grid-template-columns:96px minmax(0,1fr);align-items:start;column-gap:16px}
+.sujok-card>.info-pop{grid-column:1/-1}
+.sujok-body{display:grid;gap:8px;min-width:0}
+.sujok-steps{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:14.5px;line-height:1.5}
+.sujok-steps dt{color:var(--muted);font-weight:600}
+.sujok-steps dd{margin:0;color:var(--text)}
+.sujok-hand{width:96px;height:auto}
+.sujok-hand .hand-shape>*{fill:var(--surface-3);stroke:var(--line-3);stroke-width:1}
+.sujok-hand .hand-zone{fill:rgba(198,243,109,.16);stroke:none}
+.sujok-hand .hand-line{stroke:var(--line-3);stroke-width:1}
+.sujok-hand .hand-nail{fill:none;stroke:var(--line-3);stroke-width:.8}
+.sujok-hand .hand-dot{fill:var(--lime)}
+.sujok-hand .hand-pulse{fill:rgba(198,243,109,.25);animation:sujokPulse 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.sujok-hand .hand-caption{fill:var(--muted);font:600 8px var(--sans)}
+@keyframes sujokPulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:.9;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.sujok-hand .hand-pulse{animation:none}}
+@media(max-width:600px){.sujok-card{grid-template-columns:80px minmax(0,1fr)}.sujok-hand{width:80px}}
+@media(max-width:600px){.method-card-head{flex-direction:row;align-items:center;flex-wrap:nowrap}}

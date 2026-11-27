@@ -1,7 +1,7 @@
 // Yapısal (bütüncül) remedi anketi. Sorular kişinin genel yapısını sorar; yanıtlar Holirem remedi sayfalarındaki
 // (ve Ek remedilerdeki) satırlarla eşleşir. Her eşleşme satır numarasıyla gösterilir; puan, nadir özelliklere
 // (az remedide geçen) daha fazla ağırlık verir. Sonuç bir eşleştirmedir: yapısal remedi seçimi uzman görüşmesi ister.
-import {norm} from './search.mjs?v=mwzawjz6';
+import {norm} from './search.mjs?v=mwzcsp3l';
 
 // Kapsam: hangi bölümlerdeki satırlar sayılır.
 // mind: zihin/duygu bölümleri; general: genel belirtiler ve genel modaliteler; any: tüm sayfa (ör. susama, istekler).

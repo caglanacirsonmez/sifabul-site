@@ -1,7 +1,7 @@
 // Favori remediler. Yayındaki hafıza salt okunur olduğu için liste bu cihazın tarayıcısında saklanır
 // (yalnızca remedi kimlikleri; kişisel sağlık verisi yoktur). Depolama kapalıysa sayfa yine çalışır, liste kaydedilmez.
-import {iconNode} from './icons.mjs?v=mwzawjz6';
-import {symptomsForRemedy} from './find.mjs?v=mwzawjz6';
+import {iconNode} from './icons.mjs?v=mwzcsp3l';
+import {symptomsForRemedy} from './find.mjs?v=mwzcsp3l';
 const KEY='sifabul.favorites.v1';
 const $=id=>document.getElementById(id);
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};

@@ -1,9 +1,9 @@
 // Bul sayfasında "Akut | Yapısal" anahtarı. Akut: mevcut şikâyet araması + potens/doz notu.
 // Yapısal: kişinin genel yapısını soran anket; sonuçta Holirem remedi sayfalarıyla en çok örtüşen remediler,
 // her eşleşme satır kaynağıyla. Yanıtlar ve seçili mod bu cihazın tarayıcısında saklanır.
-import {QUESTIONS,indexRemedies,scoreConstitution} from './constitution.mjs?v=mwzawjz6';
-import {iconNode} from './icons.mjs?v=mwzawjz6';
-import {favoriteButton} from './favorites.mjs?v=mwzawjz6';
+import {QUESTIONS,indexRemedies,scoreConstitution} from './constitution.mjs?v=mwzcsp3l';
+import {iconNode} from './icons.mjs?v=mwzcsp3l';
+import {favoriteButton} from './favorites.mjs?v=mwzcsp3l';
 const KEY='sifabul.constitution.v1';
 const POTENCY_ID='articles/potens-ve-dozlama';
 const e=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
@@ -26,14 +26,15 @@ export function initConstitution({root,records,openSource}){
 
  // Akut: potens ve doz notu (sunumdan)
  const acuteNote=e('details',undefined,'potency-note');
- {const s=e('summary');s.append(iconNode('info'),e('span','Akut durumda potens ve doz (Pınar Hardless sunumu)'));acuteNote.append(s);
+ {const s=e('summary');s.append(iconNode('info'),e('span','Potens ve doz (akut)'));acuteNote.append(s);
   const ul=e('ul');for(const t of ['Akutta genellikle 30C ya da 200C tercih edilir. 30C: ateş, öksürük, grip, ishal, kusma; hafifte günde 2–3, yoğunda 1–2 saatte bir, düzeldikçe aralık açılır.','200C ve üstü: şiddetli ve ani tablolar (ani yüksek ateş, şok, travma); genelde 1 doz, sonra gözlem, gerekirse 12–24 saatte bir.','Sulu doz: ateş, ağrı, akut enfeksiyonda 30 dk–1 saatte bir; belirgin iyileşmede 3–4 saate, sonra günde 2’ye; tam iyileşmede kesilir. Her içimden önce şişe vurulur.','İyileşme başladıysa tekrar etmeyin. Değişiklik yoksa remediyi yeniden düşünün; yeni semptom çıkarsa kesip gözlemleyin.','Tedavi süresince kahve, alkol ve kâfurlu yağlar (nane, okaliptüs, biberiye) remediyi etkileyebilir. Emin değilseniz en düşük potens.'])ul.append(e('li',t));
   acuteNote.append(ul);const foot=e('p','Sunumun uyarısı: kişiye özel tedavi veya acil durum rehberi değildir. Nefes darlığı, bilinç bulanıklığı, 3 aydan küçük bebekte 38 °C ateş gibi durumlarda tıbbi yardım alın.','muted small');acuteNote.append(foot);
   if(potency)acuteNote.append(btn('Sunumun tamamını oku',()=>openSource(potency),'text-button cite'));}
- root.querySelector('#findForm').after(acuteNote);
+ // Potens notu sayfanın en altında; arama sonuçlarının önüne geçmez.
+ root.querySelector('.find-grid').after(acuteNote);
 
  // Yapısal panel
- const panel=e('section',undefined,'constitution-panel');panel.id='constitutionPanel';panel.hidden=true;panel.setAttribute('aria-live','polite');acuteNote.after(panel);
+ const panel=e('section',undefined,'constitution-panel');panel.id='constitutionPanel';panel.hidden=true;panel.setAttribute('aria-live','polite');root.querySelector('#findForm').after(panel);
 
  function setMode(mode){state.mode=mode;save();apply();if(mode==='constitution')render();}
  const h1=root.querySelector('.find-head h1'),kick=root.querySelector('.find-head .kicker'),h1Acute=h1.textContent,kickAcute=kick.textContent;
