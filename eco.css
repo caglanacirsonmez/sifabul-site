@@ -736,3 +736,50 @@ details.conflict-box>summary{cursor:pointer}
  .remedy-row .row-main{padding-right:54px}
  .remedy-row.open .row-main{padding-right:96px}
 }
+
+/* Akut | Yapısal anahtarı ve yapısal anket */
+.mode-toggle{display:inline-flex;gap:4px;padding:4px;margin:-8px 0 16px;border-radius:999px;background:var(--surface);border:1px solid var(--line-2)}
+.mode-btn{min-height:38px;padding:0 20px;border-radius:999px;font:700 14px var(--sans);color:var(--muted);transition:background .2s,color .2s}
+.mode-btn:hover{color:var(--text)}
+.mode-btn.on{background:var(--lime);color:var(--lime-ink)}
+.constitution-mode #findForm,.constitution-mode #symptomChips,.constitution-mode #methodTabs,.constitution-mode .find-grid,.constitution-mode .potency-note{display:none!important}
+.potency-note{margin:10px 0 4px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.potency-note>summary{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text-2);font-weight:600;font-size:14px}
+.potency-note>summary .icon{width:16px;height:16px;color:var(--mint)}
+.potency-note ul{margin:10px 0 6px;padding-left:20px;display:grid;gap:6px;font-size:14px;line-height:1.5;color:var(--text-2)}
+.constitution-panel{display:grid;gap:14px;max-width:820px}
+.const-intro{display:grid;gap:8px}
+.const-intro h2{margin:0;font:700 24px var(--round)}
+.const-intro p{margin:0;line-height:1.55}
+.const-warn{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:var(--r-md);background:rgba(255,196,94,.08);border:1px solid rgba(255,196,94,.3);color:var(--text-2)}
+.const-warn .icon{flex:none;width:16px;height:16px;margin-top:2px;color:var(--amber)}
+.const-card{display:grid;gap:12px;padding:18px;border:1px solid var(--line-2);border-radius:var(--r-lg);background:var(--surface)}
+.const-card h3{margin:0;font-size:21px;line-height:1.3}
+.const-progress{height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.const-progress span{display:block;height:100%;background:var(--lime);transition:width .3s var(--ease)}
+.const-options{display:grid;gap:8px}
+.const-option{text-align:left;padding:14px 16px;border-radius:var(--r-md);border:1px solid var(--line-2);background:var(--surface-2);color:var(--text);font-size:15.5px;line-height:1.4;transition:border-color .2s,background .2s}
+.const-option:hover{border-color:var(--line-3)}
+.const-option.on{border-color:var(--lime);background:rgba(198,243,109,.12);color:var(--lime)}
+.const-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.const-result{display:grid;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.const-result.top{border-color:rgba(198,243,109,.5);box-shadow:0 0 0 1px rgba(198,243,109,.15)}
+.const-result-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.const-result-head h3{margin:0;font-size:19px;flex:1;min-width:140px}
+.const-meter{width:90px;height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.const-meter span{display:block;height:100%;background:var(--mint)}
+.const-result .fav-toggle{width:36px;height:36px}
+.const-why>summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:600}
+.const-why-item{margin-top:10px}
+.const-why-item b{font-size:13.5px;color:var(--lime)}
+.const-why-item ul{margin:4px 0 0;padding-left:18px;display:grid;gap:4px;font-size:14.5px;line-height:1.5}
+.const-why-item li{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+
+/* Yüklenen belgelerden gelen yöntem önerileri */
+.method-subhead{margin:18px 0 4px;font:700 15px var(--round);color:var(--mint)}
+.method-card.doc{border-style:dashed}
+.source-chip.doc{cursor:default}
+.doc-value{margin:0;font-size:17px;font-weight:700;letter-spacing:.02em;color:var(--lime);line-height:1.45}
+.doc-text{margin:0;font-size:15px;line-height:1.55;color:var(--text)}
+.doc-general>summary{cursor:pointer;font-weight:700;color:var(--text-2)}
+.doc-general p{margin:8px 0 0;line-height:1.55}
